@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html class="dark" lang="ru">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>Корпоративный сайт Rossilber</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "tertiary-fixed-dim": "#ffb4a4",
+            "on-primary": "#192f58",
+            "on-tertiary-fixed-variant": "#8c1800",
+            "on-secondary-fixed-variant": "#7f2b00",
+            "surface-container-highest": "#1e345d",
+            "on-background": "#d8e2ff",
+            "on-error-container": "#ffdad6",
+            "tertiary-fixed": "#ffdad3",
+            "on-primary-fixed": "#001a42",
+            "outline-variant": "#44474e",
+            "on-tertiary": "#630e00",
+            "primary-fixed": "#d8e2ff",
+            "on-primary-container": "#8499c8",
+            "surface-dim": "#001232",
+            "on-secondary-fixed": "#370e00",
+            "on-primary-fixed-variant": "#314670",
+            "on-tertiary-container": "#ff6847",
+            "on-secondary": "#5a1c00",
+            "primary-container": "#1a3059",
+            "outline": "#8e9099",
+            "tertiary": "#ffb4a4",
+            "inverse-primary": "#4a5e8a",
+            "background": "#001232",
+            "secondary-fixed": "#ffdbce",
+            "secondary-container": "#cb4a00",
+            "surface-tint": "#b2c6f8",
+            "on-surface-variant": "#c5c6d0",
+            "error-container": "#93000a",
+            "surface-container-high": "#122952",
+            "on-tertiary-fixed": "#3d0600",
+            "surface-container-low": "#001a42",
+            "secondary-fixed-dim": "#ffb599",
+            "primary-fixed-dim": "#b2c6f8",
+            "surface-container": "#041e47",
+            "surface-variant": "#1e345d",
+            "error": "#ffb4ab",
+            "surface-bright": "#233862",
+            "primary": "#b2c6f8",
+            "on-surface": "#d8e2ff",
+            "surface": "#001232",
+            "surface-container-lowest": "#000d28",
+            "on-secondary-container": "#fffbff",
+            "on-error": "#690005",
+            "inverse-surface": "#d8e2ff",
+            "tertiary-container": "#640e00",
+            "secondary": "#ffb599",
+            "inverse-on-surface": "#192f58"
+          },
+          fontFamily: {
+            headline: ["Plus Jakarta Sans"],
+            body: ["Inter"],
+            label: ["Inter"]
+          },
+          borderRadius: {
+            DEFAULT: "0.125rem",
+            lg: "0.25rem",
+            xl: "0.5rem",
+            full: "0.75rem"
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    h1, h2, h3 { font-family: 'Plus Jakarta Sans', sans-serif; }
+    .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+  </style>
+</head>
+<body class="bg-background text-on-background selection:bg-primary selection:text-on-primary h-screen overflow-hidden">
+  <aside class="h-screen w-64 fixed left-0 top-0 z-40 bg-[#1A3059]/80 dark:bg-[#001232]/95 backdrop-blur-xl flex flex-col py-8 px-4 justify-between border-r border-white/5">
+    <div class="flex flex-col gap-8">
+      <div class="px-2">
+        <span class="text-xl font-black text-white tracking-tighter">Rossilber</span>
+        <p class="text-[10px] uppercase tracking-[0.2em] text-orange-500 mt-1 font-headline">Technology Monolith</p>
+      </div>
+      <nav class="flex flex-col gap-1">
+        <a class="flex items-center gap-3 px-3 py-2.5 text-slate-300 font-headline text-xs uppercase tracking-widest hover:bg-white/5 hover:text-white transition-all group" href="ai.html">
+          <span class="material-symbols-outlined text-lg group-hover:text-orange-500">smart_toy</span>
+          <span>Rossilber GPT</span>
+        </a>
+        <a class="flex items-center gap-3 px-3 py-2.5 text-orange-500 bg-white/10 rounded-sm border-r-2 border-orange-500 font-headline text-xs uppercase tracking-widest transition-all translate-x-1" href="index.html">
+          <span class="material-symbols-outlined text-lg">account_tree</span>
+          <span>Направления</span>
+        </a>
+        <a class="flex items-center gap-3 px-3 py-2.5 text-slate-300 font-headline text-xs uppercase tracking-widest hover:bg-white/5 hover:text-white transition-all group" href="checks-hub.html">
+          <span class="material-symbols-outlined text-lg group-hover:text-orange-500">dashboard</span>
+          <span>Дашборд</span>
+        </a>
+        <a class="flex items-center gap-3 px-3 py-2.5 text-slate-300 font-headline text-xs uppercase tracking-widest hover:bg-white/5 hover:text-white transition-all group" href="legal.html">
+          <span class="material-symbols-outlined text-lg group-hover:text-orange-500">menu_book</span>
+          <span>База знаний</span>
+        </a>
+      </nav>
+    </div>
+    <div class="mt-auto">
+      <a class="flex items-center gap-3 px-3 py-2.5 text-slate-300 font-headline text-xs uppercase tracking-widest hover:bg-white/5 hover:text-white transition-all group" href="flow.html">
+        <span class="material-symbols-outlined text-lg text-orange-500">waves</span>
+        <span>Rossilber Flow</span>
+      </a>
+    </div>
+  </aside>
+
+  <main class="ml-64 h-full flex flex-col">
+    <header class="flex justify-between items-center w-full px-8 py-4 bg-[#1A3059] dark:bg-[#001232] bg-gradient-to-b from-white/5 to-transparent sticky top-0 z-30">
+      <div class="flex items-center">
+        <h1 class="text-lg font-bold text-white tracking-widest uppercase font-headline">Корпоративный сайт</h1>
+      </div>
+      <div class="flex items-center gap-6">
+        <label class="relative flex items-center bg-white/5 px-3 py-1.5 rounded-sm">
+          <span class="material-symbols-outlined text-slate-400 text-sm mr-2">search</span>
+          <input class="bg-transparent border-none text-sm text-white placeholder-slate-500 focus:ring-0 p-0 w-48" placeholder="Поиск по порталу..." type="text"/>
+        </label>
+        <div class="flex items-center gap-4">
+          <button class="text-slate-400 hover:text-white transition-colors" type="button" aria-label="Уведомления">
+            <span class="material-symbols-outlined">notifications</span>
+          </button>
+          <button class="text-slate-400 hover:text-white transition-colors" type="button" aria-label="Настройки">
+            <span class="material-symbols-outlined">settings</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <section class="px-8 flex flex-col items-center py-6 flex-1">
+      <div class="mb-4 flex items-center justify-between w-full max-w-5xl">
+        <h2 class="text-lg font-bold text-white tracking-tight uppercase font-headline">Направления</h2>
+        <div class="flex gap-2">
+          <span class="px-2 py-0.5 rounded-sm bg-surface-container-highest text-[9px] font-bold text-primary uppercase tracking-wider border border-primary/20">Status: Online</span>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-4 gap-4 w-full max-w-5xl">
+        <a href="departments.html?dept=beloretsk" class="group relative bg-surface-container flex flex-col justify-between hover:bg-surface-container-high transition-all cursor-pointer border-l-2 border-primary/10 hover:border-primary h-24 p-3">
+          <div class="flex justify-between items-start"><span class="material-symbols-outlined text-primary text-xl">factory</span><span class="text-[9px] text-on-surface-variant/30 font-mono">01</span></div>
+          <span class="font-semibold leading-tight group-hover:text-primary transition-colors truncate text-sm mt-1">Производство Белорецк</span>
+        </a>
+        <a href="departments.html?dept=technopark" class="group relative bg-surface-container flex flex-col justify-between hover:bg-surface-container-high transition-all cursor-pointer border-l-2 border-primary/10 hover:border-primary h-24 p-3">
+          <div class="flex justify-between items-start"><span class="material-symbols-outlined text-primary text-xl">precision_manufacturing</span><span class="text-[9px] text-on-surface-variant/30 font-mono">02</span></div>
+          <span class="font-semibold leading-tight group-hover:text-primary transition-colors truncate text-sm mt-1">Технопарк</span>
+        </a>
+        <a href="departments.html?dept=rnd" class="group relative bg-surface-container flex flex-col justify-between hover:bg-surface-container-high transition-all cursor-pointer border-l-2 border-primary/10 hover:border-primary h-24 p-3">
+          <div class="flex justify-between items-start"><span class="material-symbols-outlined text-primary text-xl">biotech</span><span class="text-[9px] text-on-surface-variant/30 font-mono">03</span></div>
+          <span class="font-semibold leading-tight group-hover:text-primary transition-colors truncate text-sm mt-1">RnD и Технологии</span>
+        </a>
+        <a href="departments.html?dept=sales" class="group relative bg-surface-container flex flex-col justify-between hover:bg-surface-container-high transition-all cursor-pointer border-l-2 border-primary/10 hover:border-primary h-24 p-3">
+          <div class="flex justify-between items-start"><span class="material-symbols-outlined text-primary text-xl">payments</span><span class="text-[9px] text-on-surface-variant/30 font-mono">04</span></div>
+          <span class="font-semibold leading-tight group-hover:text-primary transition-colors truncate text-sm mt-1">Продажи</span>
+        </a>
+        <a href="departments.html?dept=supply" class="group relative bg-surface-container flex flex-col justify-between hover:bg-surface-container-high transition-all cursor-pointer border-l-2 border-primary/10 hover:border-primary h-24 p-3">
+          <div class="flex justify-between items-start"><span class="material-symbols-outlined text-primary text-xl">inventory_2</span><span class="text-[9px] text-on-surface-variant/30 font-mono">05</span></div>
+          <span class="font-semibold leading-tight group-hover:text-primary transition-colors truncate text-sm mt-1">Снабжение</span>
+        </a>
+        <a href="departments.html?dept=development" class="group relative bg-surface-container flex flex-col justify-between hover:bg-surface-container-high transition-all cursor-pointer border-l-2 border-primary/10 hover:border-primary h-24 p-3">
+          <div class="flex justify-between items-start"><span class="material-symbols-outlined text-primary text-xl">trending_up</span><span class="text-[9px] text-on-surface-variant/30 font-mono">06</span></div>
+          <span class="font-semibold leading-tight group-hover:text-primary transition-colors truncate text-sm mt-1">Развитие</span>
+        </a>
+        <a href="departments.html?dept=efficiency" class="group relative bg-surface-container flex flex-col justify-between hover:bg-surface-container-high transition-all cursor-pointer border-l-2 border-primary/10 hover:border-primary h-24 p-3">
+          <div class="flex justify-between items-start"><span class="material-symbols-outlined text-primary text-xl">bolt</span><span class="text-[9px] text-on-surface-variant/30 font-mono">07</span></div>
+          <span class="font-semibold leading-tight group-hover:text-primary transition-colors truncate text-sm mt-1">Опер. эффективность</span>
+        </a>
+        <a href="departments.html?dept=hr" class="group relative bg-surface-container flex flex-col justify-between hover:bg-surface-container-high transition-all cursor-pointer border-l-2 border-primary/10 hover:border-primary h-24 p-3">
+          <div class="flex justify-between items-start"><span class="material-symbols-outlined text-primary text-xl">group</span><span class="text-[9px] text-on-surface-variant/30 font-mono">08</span></div>
+          <span class="font-semibold leading-tight group-hover:text-primary transition-colors truncate text-sm mt-1">Персонал</span>
+        </a>
+        <a href="departments.html?dept=finance" class="group relative bg-surface-container flex flex-col justify-between hover:bg-surface-container-high transition-all cursor-pointer border-l-2 border-primary/10 hover:border-primary h-24 p-3">
+          <div class="flex justify-between items-start"><span class="material-symbols-outlined text-primary text-xl">account_balance</span><span class="text-[9px] text-on-surface-variant/30 font-mono">09</span></div>
+          <span class="font-semibold leading-tight group-hover:text-primary transition-colors truncate text-sm mt-1">Финансы</span>
+        </a>
+        <a href="departments.html?dept=security" class="group relative bg-surface-container flex flex-col justify-between hover:bg-surface-container-high transition-all cursor-pointer border-l-2 border-primary/10 hover:border-primary h-24 p-3">
+          <div class="flex justify-between items-start"><span class="material-symbols-outlined text-primary text-xl">security</span><span class="text-[9px] text-on-surface-variant/30 font-mono">10</span></div>
+          <span class="font-semibold leading-tight group-hover:text-primary transition-colors truncate text-sm mt-1">Безопасность</span>
+        </a>
+        <a href="departments.html?dept=hse" class="group relative bg-surface-container flex flex-col justify-between hover:bg-surface-container-high transition-all cursor-pointer border-l-2 border-primary/10 hover:border-primary h-24 p-3">
+          <div class="flex justify-between items-start"><span class="material-symbols-outlined text-primary text-xl">health_and_safety</span><span class="text-[9px] text-on-surface-variant/30 font-mono">11</span></div>
+          <span class="font-semibold leading-tight group-hover:text-primary transition-colors truncate text-sm mt-1">СОТПБ и ЭБ</span>
+        </a>
+        <a href="departments.html?dept=legal" class="group relative bg-surface-container flex flex-col justify-between hover:bg-surface-container-high transition-all cursor-pointer border-l-2 border-primary/10 hover:border-primary h-24 p-3">
+          <div class="flex justify-between items-start"><span class="material-symbols-outlined text-primary text-xl">gavel</span><span class="text-[9px] text-on-surface-variant/30 font-mono">12</span></div>
+          <span class="font-semibold leading-tight group-hover:text-primary transition-colors truncate text-sm mt-1">Право</span>
+        </a>
+        <a href="departments.html?dept=it" class="group relative bg-surface-container flex flex-col justify-between hover:bg-surface-container-high transition-all cursor-pointer border-l-2 border-primary/10 hover:border-primary h-24 p-3">
+          <div class="flex justify-between items-start"><span class="material-symbols-outlined text-primary text-xl">memory</span><span class="text-[9px] text-on-surface-variant/30 font-mono">13</span></div>
+          <span class="font-semibold leading-tight group-hover:text-primary transition-colors truncate text-sm mt-1">ИТ</span>
+        </a>
+        <a href="departments.html?dept=admin" class="group relative bg-surface-container flex flex-col justify-between hover:bg-surface-container-high transition-all cursor-pointer border-l-2 border-primary/10 hover:border-primary h-24 p-3">
+          <div class="flex justify-between items-start"><span class="material-symbols-outlined text-primary text-xl">admin_panel_settings</span><span class="text-[9px] text-on-surface-variant/30 font-mono">14</span></div>
+          <span class="font-semibold leading-tight group-hover:text-primary transition-colors truncate text-sm mt-1">Администрирование</span>
+        </a>
+        <a href="departments.html?dept=tech_policy" class="group relative bg-surface-container flex flex-col justify-between hover:bg-surface-container-high transition-all cursor-pointer border-l-2 border-primary/10 hover:border-primary h-24 p-3">
+          <div class="flex justify-between items-start"><span class="material-symbols-outlined text-primary text-xl">architecture</span><span class="text-[9px] text-on-surface-variant/30 font-mono">15</span></div>
+          <span class="font-semibold leading-tight group-hover:text-primary transition-colors truncate text-sm mt-1">Техническая политика</span>
+        </a>
+        <a href="departments.html?dept=ai" class="group relative bg-surface-container flex flex-col justify-between hover:bg-surface-container-high transition-all cursor-pointer border-l-2 border-secondary/20 hover:border-secondary h-24 p-3">
+          <div class="flex justify-between items-start"><span class="material-symbols-outlined text-secondary text-xl">neurology</span><span class="text-[9px] text-on-surface-variant/30 font-mono">16</span></div>
+          <span class="font-semibold leading-tight group-hover:text-secondary transition-colors truncate text-sm mt-1">Искусственный интеллект</span>
+        </a>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

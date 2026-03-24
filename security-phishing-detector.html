@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Детектор фишинговых писем</title>
+  <style>
+    :root {
+      --bg: #070f22;
+      --bg-2: #0a1734;
+      --panel: #101f3f;
+      --panel-2: #14254a;
+      --line: rgba(128, 162, 238, 0.24);
+      --line-strong: rgba(128, 162, 238, 0.42);
+      --text: #eaf1ff;
+      --muted: #a7b6d6;
+      --brand: #4f8dff;
+      --ok: #45d1a0;
+      --warn: #ffbe52;
+      --danger: #ff6d6d;
+      color-scheme: dark;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, "Segoe UI", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(1000px 520px at 5% -10%, #18397a 0%, transparent 56%),
+        linear-gradient(180deg, var(--bg-2), var(--bg));
+    }
+
+    .wrap {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 24px 18px 60px;
+    }
+
+    .back {
+      text-decoration: none;
+      color: var(--muted);
+      font-size: 14px;
+      display: inline-block;
+      margin-bottom: 14px;
+    }
+
+    .back:hover { color: var(--text); }
+
+    .header {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 18px;
+      background: linear-gradient(130deg, rgba(16, 31, 63, 0.96), rgba(12, 27, 58, 0.75));
+      margin-bottom: 14px;
+      display: grid;
+      gap: 10px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(24px, 3vw, 34px);
+      line-height: 1.2;
+      letter-spacing: 0.01em;
+    }
+
+    .lead {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.55;
+      font-size: 15px;
+    }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(7, 16, 38, 0.55);
+      padding: 7px 12px;
+      font-size: 12px;
+      color: var(--muted);
+      width: fit-content;
+    }
+
+    #statusDot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: #6e7da0;
+    }
+
+    #statusDot.loading { background: var(--warn); }
+    #statusDot.ready { background: var(--ok); }
+    #statusDot.error { background: var(--danger); }
+
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: linear-gradient(130deg, rgba(16, 31, 63, 0.96), rgba(12, 27, 58, 0.75));
+      padding: 18px;
+      margin-top: 12px;
+    }
+
+    .card h2 {
+      margin: 0 0 6px;
+      font-size: 18px;
+    }
+
+    .sub {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .model-list {
+      margin-top: 14px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .model-item {
+      display: flex;
+      gap: 10px;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: rgba(8, 18, 40, 0.55);
+      cursor: pointer;
+    }
+
+    .model-item:hover { border-color: var(--line-strong); }
+
+    .model-item strong { display: block; font-size: 14px; }
+    .model-item span { display: block; font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+    .actions { margin-top: 14px; display: flex; flex-wrap: wrap; gap: 8px; }
+
+    .btn {
+      border: 1px solid transparent;
+      border-radius: 10px;
+      background: var(--brand);
+      color: #fff;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 10px 16px;
+    }
+
+    .btn:disabled { opacity: .5; cursor: not-allowed; }
+
+    .btn-ghost {
+      background: rgba(23, 41, 80, 0.8);
+      border-color: var(--line);
+      color: var(--text);
+    }
+
+    .progress {
+      margin-top: 12px;
+      display: none;
+    }
+
+    .bar {
+      width: 100%;
+      height: 8px;
+      border-radius: 6px;
+      background: rgba(8, 18, 40, 0.7);
+      overflow: hidden;
+      border: 1px solid var(--line);
+    }
+
+    .bar > div {
+      height: 100%;
+      width: 0;
+      background: var(--brand);
+      transition: width .2s ease;
+    }
+
+    #progressText { margin-top: 7px; color: var(--muted); font-size: 12px; }
+
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .tab {
+      border: 1px solid var(--line);
+      background: rgba(23, 41, 80, 0.5);
+      color: var(--text);
+      border-radius: 10px;
+      padding: 8px 12px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .tab.active { border-color: var(--brand); }
+
+    .panel { display: none; margin-top: 12px; }
+    .panel.active { display: block; }
+
+    textarea {
+      width: 100%;
+      min-height: 200px;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      background: rgba(7, 16, 38, 0.8);
+      color: var(--text);
+      padding: 12px;
+      resize: vertical;
+      font-size: 14px;
+      line-height: 1.5;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+
+    .hint { margin-top: 8px; color: var(--muted); font-size: 12px; }
+
+    .drop {
+      border: 1.5px dashed var(--line-strong);
+      border-radius: 12px;
+      padding: 28px 14px;
+      text-align: center;
+      color: var(--muted);
+      background: rgba(7, 16, 38, 0.7);
+      cursor: pointer;
+    }
+
+    .drop.drag {
+      border-color: var(--brand);
+      background: rgba(17, 33, 71, 0.7);
+    }
+
+    .file-info {
+      margin-top: 10px;
+      padding: 9px 10px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      font-size: 12px;
+      color: var(--muted);
+      display: none;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .file-info.on { display: flex; }
+    .file-remove { margin-left: auto; cursor: pointer; color: var(--danger); }
+
+    #imgPreview {
+      display: none;
+      max-width: 100%;
+      max-height: 220px;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      margin-top: 10px;
+    }
+
+    #imgPreview.on { display: block; }
+
+    .log {
+      margin-top: 10px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: rgba(7, 16, 38, 0.8);
+      color: var(--muted);
+      font-size: 12px;
+      padding: 9px 10px;
+      min-height: 36px;
+      display: none;
+    }
+
+    .log.on { display: block; }
+
+    .error {
+      margin-top: 12px;
+      padding: 10px;
+      border: 1px solid rgba(255, 109, 109, 0.5);
+      background: rgba(125, 35, 35, 0.3);
+      border-radius: 10px;
+      color: #ffc1c1;
+      font-size: 13px;
+      display: none;
+      white-space: pre-wrap;
+    }
+
+    .error.on { display: block; }
+
+    #stream {
+      margin-top: 12px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: rgba(7, 16, 38, 0.75);
+      padding: 10px;
+      color: var(--muted);
+      font-size: 12px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      max-height: 130px;
+      overflow: auto;
+      display: none;
+    }
+
+    #stream.on { display: block; }
+
+    #results { margin-top: 14px; display: none; }
+    #results.on { display: block; }
+
+    .risk {
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      padding: 14px;
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .risk.safe { border-color: rgba(69, 209, 160, 0.45); background: rgba(29, 82, 67, 0.28); }
+    .risk.low { border-color: rgba(151, 198, 68, 0.45); background: rgba(76, 88, 35, 0.28); }
+    .risk.medium { border-color: rgba(255, 190, 82, 0.45); background: rgba(103, 74, 27, 0.28); }
+    .risk.high { border-color: rgba(255, 141, 86, 0.45); background: rgba(100, 47, 25, 0.28); }
+    .risk.critical { border-color: rgba(255, 109, 109, 0.45); background: rgba(100, 34, 34, 0.28); }
+
+    .score {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      border: 2px solid var(--line-strong);
+      display: grid;
+      place-items: center;
+      font-size: 26px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .risk h3 { margin: 0 0 5px; font-size: 13px; letter-spacing: .06em; }
+    .risk p { margin: 0; font-size: 14px; line-height: 1.5; }
+
+    .section {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      overflow: hidden;
+      margin-top: 10px;
+    }
+
+    .section-head {
+      padding: 10px 12px;
+      font-size: 13px;
+      color: var(--muted);
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .list { padding: 10px; display: grid; gap: 8px; }
+
+    .marker {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 10px;
+      background: rgba(7, 16, 38, 0.8);
+    }
+
+    .marker .top {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 5px;
+    }
+
+    .sev {
+      font-size: 11px;
+      border-radius: 99px;
+      padding: 2px 8px;
+      border: 1px solid var(--line);
+      color: var(--muted);
+    }
+
+    .marker h4 { margin: 0; font-size: 15px; }
+    .marker small { color: var(--muted); }
+    .marker p { margin: 6px 0 0; color: var(--muted); font-size: 13px; line-height: 1.45; }
+
+    .signal {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 9px 10px;
+      background: rgba(7, 16, 38, 0.8);
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .recommendation {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      margin-top: 10px;
+      padding: 12px;
+      background: rgba(7, 16, 38, 0.8);
+      font-size: 14px;
+      line-height: 1.55;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <a class="back" href="departments.html?dept=security">← К проектам направления «Безопасность»</a>
+
+    <section class="header">
+      <h1>Детектор фишинговых писем</h1>
+      <p class="lead">Локальный анализ писем через WebLLM: оценка риска фишинга, объяснение признаков и рекомендации в корпоративном стиле. Данные не отправляются на сервер: обработка выполняется только в браузере.</p>
+      <div class="status"><span id="statusDot"></span><span id="statusText">Модель не загружена</span></div>
+    </section>
+
+    <section class="card">
+      <h2>1) Загрузка модели WebLLM</h2>
+      <p class="sub">Выберите профиль модели и запустите локальную инициализацию (кэшируется в браузере). Рекомендуется Chrome/Edge с WebGPU.</p>
+
+      <div class="model-list">
+        <label class="model-item">
+          <input type="radio" name="model" value="Qwen2.5-0.5B-Instruct-q4f16_1-MLC" checked>
+          <div>
+            <strong>Qwen2.5-0.5B (~400 МБ) · Рекомендуется</strong>
+            <span>Быстрая и стабильная модель для RU/EN анализа.</span>
+          </div>
+        </label>
+        <label class="model-item">
+          <input type="radio" name="model" value="SmolLM2-360M-Instruct-q4f16_1-MLC">
+          <div>
+            <strong>SmolLM2-360M (~200 МБ) · Лёгкая</strong>
+            <span>Минимальный размер, но ниже качество на русском языке.</span>
+          </div>
+        </label>
+        <label class="model-item">
+          <input type="radio" name="model" value="Qwen2.5-1.5B-Instruct-q4f16_1-MLC">
+          <div>
+            <strong>Qwen2.5-1.5B (~1 ГБ) · Точнее</strong>
+            <span>Лучшее качество анализа при достаточном запасе GPU/памяти.</span>
+          </div>
+        </label>
+      </div>
+
+      <div class="actions">
+        <button class="btn" id="loadBtn" type="button">Загрузить модель</button>
+      </div>
+
+      <div class="progress" id="progressWrap">
+        <div class="bar"><div id="progressFill"></div></div>
+        <div id="progressText">Инициализация...</div>
+      </div>
+      <div class="error" id="loadError"></div>
+    </section>
+
+    <section class="card" id="inputCard" style="opacity:.55; pointer-events:none;">
+      <h2>2) Источник письма</h2>
+      <p class="sub">Сохраняем удобный формат загрузки: текст, скриншот или PDF. После извлечения содержимого выполняется единый анализ.</p>
+
+      <div class="tabs" id="tabs">
+        <button class="tab active" data-tab="text" type="button">Текст</button>
+        <button class="tab" data-tab="image" type="button">Скриншот</button>
+        <button class="tab" data-tab="pdf" type="button">PDF</button>
+      </div>
+
+      <div class="panel active" id="panel-text">
+        <textarea id="emailText" placeholder="Вставьте письмо целиком: От, Кому, Тема, тело, ссылки, подпись..."></textarea>
+        <div class="hint">Для точности включайте заголовки и все URL из письма.</div>
+      </div>
+
+      <div class="panel" id="panel-image">
+        <label class="drop" id="imgDrop">
+          Загрузите изображение (PNG/JPG) с письмом или вставьте скриншот из «Ножниц».
+          <input id="imgInput" type="file" accept="image/*" hidden>
+        </label>
+        <img id="imgPreview" alt="Предпросмотр скриншота">
+        <div class="file-info" id="imgInfo"><span id="imgName"></span><span class="file-remove" id="imgClear">✕</span></div>
+        <div class="log" id="ocrLog"></div>
+      </div>
+
+      <div class="panel" id="panel-pdf">
+        <label class="drop" id="pdfDrop">
+          Загрузите PDF-файл с письмом или выгрузкой переписки.
+          <input id="pdfInput" type="file" accept=".pdf,application/pdf" hidden>
+        </label>
+        <div class="file-info" id="pdfInfo"><span id="pdfName"></span><span class="file-remove" id="pdfClear">✕</span></div>
+        <div class="log" id="pdfLog"></div>
+      </div>
+
+      <div class="actions">
+        <button class="btn" id="analyzeBtn" type="button" disabled>Анализировать письмо</button>
+      </div>
+      <div class="error" id="analyzeError"></div>
+      <div id="stream"></div>
+    </section>
+
+    <section id="results">
+      <article class="risk safe" id="riskBox">
+        <div class="score" id="riskScore">0</div>
+        <div>
+          <h3 id="riskLevel">БЕЗОПАСНО</h3>
+          <p id="riskSummary">Результат анализа появится после проверки письма.</p>
+        </div>
+      </article>
+
+      <article class="section">
+        <div class="section-head">Признаки фишинга <strong id="markersCount">0</strong></div>
+        <div class="list" id="markersList"><div class="signal">Подозрительные признаки не обнаружены.</div></div>
+      </article>
+
+      <article class="section">
+        <div class="section-head">Признаки легитимности <strong id="signalsCount">0</strong></div>
+        <div class="list" id="signalsList"><div class="signal">Пока нет данных.</div></div>
+      </article>
+
+      <article class="recommendation" id="recommendation">Рекомендация появится после анализа.</article>
+    </section>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+
+  <script type="module">
+    import { CreateMLCEngine } from 'https://esm.run/@mlc-ai/web-llm';
+
+    const $ = (id) => document.getElementById(id);
+    const esc = (v) => String(v || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+    let engine = null;
+    let modelReady = false;
+    let analyzing = false;
+    let activeTab = 'text';
+    let imageData = null;
+    let pdfText = '';
+
+    const SYS = `Ты — корпоративный детектор фишинговых писем для сотрудников компании.
+Твоя задача: оценить риск и выделить признаки фишинга.
+Важно:
+1) Отвечай строго в формате JSON.
+2) Текст полей summary, markers[].category, markers[].indicator, markers[].explanation, legitimate_signals[] и recommendation пиши только на русском языке.
+3) recommendation пиши только на русском языке, деловым и понятным корпоративным стилем.
+4) Не используй markdown, комментарии и лишние поля.
+
+Формат ответа:
+{"risk_score":<0-100>,"risk_level":"<safe|low|medium|high|critical>","summary":"<краткий итог>","markers":[{"category":"<категория>","indicator":"<признак>","severity":"<critical|high|medium|low>","explanation":"<почему это риск>"}],"legitimate_signals":["<признак легитимности>"],"recommendation":"<рекомендация на русском языке>"}
+
+Шкала: 0-20 safe, 21-40 low, 41-60 medium, 61-80 high, 81-100 critical.`;
+
+    function setStatus(kind, text) {
+      $('statusDot').className = kind;
+      $('statusText').textContent = text;
+    }
+
+    function setError(id, text = '') {
+      const box = $(id);
+      box.textContent = text;
+      box.classList.toggle('on', Boolean(text));
+    }
+
+    function updateAnalyzeButton() {
+      const btn = $('analyzeBtn');
+      if (!modelReady || analyzing) {
+        btn.disabled = true;
+        return;
+      }
+
+      const canAnalyze =
+        (activeTab === 'text' && $('emailText').value.trim().length >= 20) ||
+        (activeTab === 'image' && Boolean(imageData)) ||
+        (activeTab === 'pdf' && pdfText.trim().length > 0);
+
+      btn.disabled = !canAnalyze;
+    }
+
+    function switchTab(tab) {
+      activeTab = tab;
+      document.querySelectorAll('.tab').forEach((el) => el.classList.toggle('active', el.dataset.tab === tab));
+      document.querySelectorAll('.panel').forEach((el) => el.classList.toggle('active', el.id === `panel-${tab}`));
+      updateAnalyzeButton();
+    }
+
+    $('tabs').addEventListener('click', (event) => {
+      const button = event.target.closest('.tab');
+      if (!button) return;
+      switchTab(button.dataset.tab);
+    });
+
+    $('loadBtn').addEventListener('click', async () => {
+      const button = $('loadBtn');
+      const selectedModel = document.querySelector('input[name="model"]:checked').value;
+
+      setError('loadError');
+      setStatus('loading', 'Загрузка модели...');
+      button.disabled = true;
+      $('progressWrap').style.display = 'block';
+
+      try {
+        engine = await CreateMLCEngine(selectedModel, {
+          initProgressCallback(progress) {
+            const ratio = Math.max(0, Math.min(1, progress.progress || 0));
+            const percent = Math.round(ratio * 100);
+            $('progressFill').style.width = `${percent}%`;
+            $('progressText').textContent = progress.text || `Загрузка модели: ${percent}%`;
+          }
+        });
+
+        modelReady = true;
+        $('progressFill').style.width = '100%';
+        $('progressText').textContent = 'Модель готова к работе.';
+        setStatus('ready', 'Модель загружена');
+        $('inputCard').style.opacity = '1';
+        $('inputCard').style.pointerEvents = 'auto';
+        button.textContent = 'Модель загружена';
+      } catch (error) {
+        console.error(error);
+        setStatus('error', 'Ошибка загрузки модели');
+        setError('loadError', `Не удалось загрузить модель: ${error.message}\n\nПроверьте WebGPU (Chrome/Edge), интернет и доступ к CDN.`);
+        button.disabled = false;
+      }
+
+      updateAnalyzeButton();
+    });
+
+    $('emailText').addEventListener('input', updateAnalyzeButton);
+
+    function bindDropZone(dropId, inputId, handler) {
+      const drop = $(dropId);
+      const input = $(inputId);
+
+      drop.addEventListener('click', () => input.click());
+      input.addEventListener('change', (event) => handler(event.target.files[0]));
+      drop.addEventListener('dragover', (event) => {
+        event.preventDefault();
+        drop.classList.add('drag');
+      });
+      drop.addEventListener('dragleave', () => drop.classList.remove('drag'));
+      drop.addEventListener('drop', (event) => {
+        event.preventDefault();
+        drop.classList.remove('drag');
+        handler(event.dataTransfer.files[0]);
+      });
+    }
+
+    function handleImage(file) {
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        imageData = event.target.result;
+        $('imgPreview').src = imageData;
+        $('imgPreview').classList.add('on');
+        $('imgName').textContent = `${file.name} · ${(file.size / 1024).toFixed(0)} КБ`;
+        $('imgInfo').classList.add('on');
+        setError('analyzeError');
+        updateAnalyzeButton();
+      };
+      reader.readAsDataURL(file);
+    }
+
+    $('imgClear').addEventListener('click', () => {
+      imageData = null;
+      $('imgInput').value = '';
+      $('imgPreview').classList.remove('on');
+      $('imgInfo').classList.remove('on');
+      $('ocrLog').classList.remove('on');
+      updateAnalyzeButton();
+    });
+
+    async function runOcr(dataUrl) {
+      const log = $('ocrLog');
+      log.classList.add('on');
+      log.textContent = 'OCR: запуск распознавания...';
+
+      const result = await Tesseract.recognize(dataUrl, 'rus+eng', {
+        logger(message) {
+          if (message.status === 'recognizing text') {
+            log.textContent = `OCR: ${Math.round((message.progress || 0) * 100)}%`;
+          }
+        }
+      });
+
+      const text = (result.data?.text || '').trim();
+      log.textContent = `OCR завершён: извлечено ${text.length} символов.`;
+      return text;
+    }
+
+    async function handlePdf(file) {
+      if (!file) return;
+      pdfText = '';
+      const log = $('pdfLog');
+      log.classList.add('on');
+      log.textContent = 'PDF: извлечение текста...';
+      $('pdfName').textContent = file.name;
+      $('pdfInfo').classList.add('on');
+
+      try {
+        const buffer = await file.arrayBuffer();
+        if (!window.pdfjsLib) {
+          throw new Error('pdf.js не инициализирован');
+        }
+
+        const pdf = await window.pdfjsLib.getDocument(new Uint8Array(buffer)).promise;
+        let aggregate = '';
+
+        for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber += 1) {
+          const page = await pdf.getPage(pageNumber);
+          const content = await page.getTextContent();
+          aggregate += `${content.items.map((item) => item.str).join(' ')}\n`;
+        }
+
+        pdfText = aggregate.trim();
+        log.textContent = `PDF обработан: ${pdf.numPages} стр., ${pdfText.length} символов.`;
+      } catch (error) {
+        log.textContent = `Ошибка обработки PDF: ${error.message}`;
+      }
+
+      updateAnalyzeButton();
+    }
+
+    $('pdfClear').addEventListener('click', () => {
+      pdfText = '';
+      $('pdfInput').value = '';
+      $('pdfInfo').classList.remove('on');
+      $('pdfLog').classList.remove('on');
+      updateAnalyzeButton();
+    });
+
+    bindDropZone('imgDrop', 'imgInput', handleImage);
+    bindDropZone('pdfDrop', 'pdfInput', handlePdf);
+
+    function normalizeRiskLevel(level = 'safe') {
+      const allowed = new Set(['safe', 'low', 'medium', 'high', 'critical']);
+      return allowed.has(level) ? level : 'medium';
+    }
+
+    function renderResults(payload) {
+      const riskScore = Math.max(0, Math.min(100, Math.round(Number(payload.risk_score) || 0)));
+      const riskLevel = normalizeRiskLevel(payload.risk_level);
+
+      const labels = {
+        safe: 'БЕЗОПАСНО',
+        low: 'НИЗКИЙ РИСК',
+        medium: 'СРЕДНИЙ РИСК',
+        high: 'ВЫСОКИЙ РИСК',
+        critical: 'КРИТИЧЕСКИЙ РИСК'
+      };
+
+      $('riskBox').className = `risk ${riskLevel}`;
+      $('riskScore').textContent = String(riskScore);
+      $('riskLevel').textContent = labels[riskLevel];
+      $('riskSummary').textContent = payload.summary || 'Итог недоступен';
+
+      const markers = Array.isArray(payload.markers) ? payload.markers : [];
+      $('markersCount').textContent = String(markers.length);
+      $('markersList').innerHTML = markers.length
+        ? markers.map((marker) => `
+            <article class="marker">
+              <div class="top">
+                <span class="sev">${esc(marker.severity || 'medium').toUpperCase()}</span>
+                <small>${esc(marker.category || 'Категория не указана')}</small>
+              </div>
+              <h4>${esc(marker.indicator || 'Неизвестный индикатор')}</h4>
+              <p>${esc(marker.explanation || '')}</p>
+            </article>`).join('')
+        : '<div class="signal">Подозрительные признаки не обнаружены.</div>';
+
+      const signals = Array.isArray(payload.legitimate_signals) ? payload.legitimate_signals : [];
+      $('signalsCount').textContent = String(signals.length);
+      $('signalsList').innerHTML = signals.length
+        ? signals.map((signal) => `<div class="signal">${esc(signal)}</div>`).join('')
+        : '<div class="signal">Сильные признаки легитимности не выявлены.</div>';
+
+      $('recommendation').textContent = payload.recommendation || 'Рекомендация не получена.';
+      $('results').classList.add('on');
+      $('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function extractJson(text) {
+      if (!text) {
+        throw new Error('Пустой ответ модели');
+      }
+
+      const cleaned = text.replace(/```json|```/gi, '').trim();
+      const match = cleaned.match(/\{[\s\S]*\}/);
+      if (!match) {
+        throw new Error('Не удалось извлечь JSON из ответа модели');
+      }
+      return JSON.parse(match[0]);
+    }
+
+    $('analyzeBtn').addEventListener('click', async () => {
+      if (!engine || !modelReady || analyzing) {
+        return;
+      }
+
+      setError('analyzeError');
+      analyzing = true;
+      updateAnalyzeButton();
+      $('results').classList.remove('on');
+      $('stream').classList.add('on');
+      $('stream').textContent = '';
+
+      try {
+        let sourceText = '';
+
+        if (activeTab === 'text') {
+          sourceText = $('emailText').value.trim();
+        } else if (activeTab === 'image') {
+          sourceText = await runOcr(imageData);
+        } else {
+          sourceText = pdfText.trim();
+        }
+
+        if (sourceText.length < 10) {
+          throw new Error('Недостаточно текста для анализа. Добавьте больше данных.');
+        }
+
+        let full = '';
+        const response = await engine.chat.completions.create({
+          messages: [
+            { role: 'system', content: SYS },
+            { role: 'user', content: `Проанализируй письмо:\n---\n${sourceText.slice(0, 4000)}\n---` }
+          ],
+          temperature: 0.05,
+          max_tokens: 1024,
+          stream: true
+        });
+
+        for await (const chunk of response) {
+          const delta = chunk.choices?.[0]?.delta?.content || '';
+          full += delta;
+          $('stream').textContent = full;
+          $('stream').scrollTop = $('stream').scrollHeight;
+        }
+
+        const payload = extractJson(full);
+        renderResults(payload);
+      } catch (error) {
+        console.error(error);
+        setError('analyzeError', `Ошибка анализа: ${error.message}`);
+      }
+
+      analyzing = false;
+      $('stream').classList.remove('on');
+      updateAnalyzeButton();
+    });
+  </script>
+
+  <script type="module">
+    try {
+      const pdfjs = await import('https://cdn.jsdelivr.net/npm/pdfjs-dist@4.0.379/build/pdf.min.mjs');
+      pdfjs.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.0.379/build/pdf.worker.min.mjs';
+      window.pdfjsLib = pdfjs;
+    } catch (error) {
+      console.warn('Не удалось загрузить pdf.js', error);
+    }
+  </script>
+</body>
+</html>

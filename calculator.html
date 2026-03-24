@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Россильбер | Калькулятор задолженностей</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans p-6 md:p-12 min-h-screen flex flex-col">
+
+    <div class="max-w-5xl mx-auto bg-white p-8 rounded-xl shadow-lg border border-gray-200 flex-grow w-full">
+        
+        <div class="mb-8 border-b border-gray-200 pb-4 flex justify-between items-end">
+            <div>
+                <h1 class="text-4xl font-extrabold text-indigo-800 tracking-wider uppercase mb-1">Россильбер</h1>
+                <p class="text-xl text-gray-500">Универсальный калькулятор пеней и неустоек</p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-8">
+            
+            <div class="lg:col-span-5 bg-gray-50 p-6 rounded-lg border border-gray-200">
+                <h2 class="text-lg font-bold text-gray-700 mb-5 border-b pb-2">Параметры расчета</h2>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-1">Сумма основного долга (руб.):</label>
+                        <input type="number" id="inputDebt" class="w-full p-3 border border-gray-300 rounded focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-lg" placeholder="Например: 1500000">
+                    </div>
+
+                    <div class="rounded-lg border border-gray-200 bg-white p-3">
+                        <div class="flex items-center justify-between mb-2">
+                            <label class="block text-sm font-bold text-gray-700">Частичная оплата задолженности:</label>
+                            <button type="button" onclick="addAdjustmentRow('paymentsBody', 'payment')" class="text-xs font-bold text-indigo-600 hover:text-indigo-800">+ Добавить</button>
+                        </div>
+                        <div class="space-y-2" id="paymentsBody"></div>
+                        <p class="mt-2 text-xs text-gray-500">Указывайте дату и сумму каждого платежа в периоде просрочки.</p>
+                    </div>
+
+                    <div class="rounded-lg border border-gray-200 bg-white p-3">
+                        <div class="flex items-center justify-between mb-2">
+                            <label class="block text-sm font-bold text-gray-700">Дополнительные задолженности:</label>
+                            <button type="button" onclick="addAdjustmentRow('additionsBody', 'addition')" class="text-xs font-bold text-indigo-600 hover:text-indigo-800">+ Добавить</button>
+                        </div>
+                        <div class="space-y-2" id="additionsBody"></div>
+                        <p class="mt-2 text-xs text-gray-500">Указывайте дату и сумму каждого нового долга, возникшего в период просрочки.</p>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-1">Начало просрочки:</label>
+                            <input type="date" id="inputStartDate" class="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-indigo-500 text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-1">Конец просрочки:</label>
+                            <input type="date" id="inputEndDate" class="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-indigo-500 text-sm">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-1">Основание для взыскания:</label>
+                        <select id="inputType" class="w-full p-3 border border-gray-300 rounded focus:ring-2 focus:ring-indigo-500 bg-white" onchange="toggleRateLabel()">
+                            <option value="395">Ст. 395 ГК РФ (Ключевая ставка ЦБ)</option>
+                            <option value="contract">Договорная неустойка (% в день)</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label id="rateLabel" class="block text-sm font-bold text-gray-700 mb-1">Действующая ставка ЦБ (% годовых):</label>
+                        <input type="number" id="inputRate" step="0.01" class="w-full p-3 border border-gray-300 rounded focus:ring-2 focus:ring-indigo-500 text-lg" placeholder="Ставка подставится автоматически" readonly>
+                        <p id="rateHint" class="mt-1 text-xs text-gray-500">Для ст. 395 ГК РФ ставка ЦБ определяется автоматически по выбранному периоду.</p>
+                    </div>
+                </div>
+
+                <button onclick="calculatePenalty()" class="mt-6 w-full bg-indigo-600 text-white px-6 py-4 rounded-lg font-bold text-lg hover:bg-indigo-700 transition shadow-md">
+                    🧮 Рассчитать сумму
+                </button>
+            </div>
+
+            <div class="lg:col-span-7 flex flex-col">
+                <h2 class="text-lg font-bold text-gray-700 mb-5 border-b pb-2">Результат для суда</h2>
+                
+                <div id="resultPlaceholder" class="flex-grow flex items-center justify-center border-2 border-dashed border-gray-300 rounded-lg bg-gray-50 text-gray-400">
+                    Введите данные и нажмите «Рассчитать»
+                </div>
+
+                <div id="resultContainer" class="hidden flex-col h-full">
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div class="bg-blue-50 p-4 rounded-lg border border-blue-100 text-center">
+                            <span class="block text-sm text-blue-600 font-bold mb-1">Дней просрочки</span>
+                            <span class="text-3xl font-extrabold text-blue-900" id="outDays">0</span>
+                        </div>
+                        <div class="bg-green-50 p-4 rounded-lg border border-green-100 text-center">
+                            <span class="block text-sm text-green-600 font-bold mb-1">Сумма неустойки (руб.)</span>
+                            <span class="text-3xl font-extrabold text-green-900" id="outPenalty">0.00</span>
+                        </div>
+                    </div>
+
+                    <div class="bg-indigo-50 p-4 rounded-lg border border-indigo-200 text-center mb-4">
+                        <span class="block text-sm text-indigo-700 font-bold mb-1">ОБЩАЯ СУММА ИСКА (Долг + Пени)</span>
+                        <span class="text-2xl font-bold text-indigo-900" id="outTotal">0.00</span>
+                    </div>
+
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Формула расчета для искового заявления:</label>
+                    <textarea id="outText" rows="6" class="w-full p-4 border border-gray-300 rounded-lg bg-white text-sm font-serif leading-relaxed text-gray-800" readonly></textarea>
+                    
+                    <button onclick="copyResult()" class="mt-4 w-full bg-white border-2 border-indigo-600 text-indigo-700 px-6 py-3 rounded-lg font-bold hover:bg-indigo-50 transition shadow-sm">
+                        📋 Скопировать расчет для иска
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <hr class="my-10 border-gray-300">
+
+        <div class="bg-blue-50 p-6 rounded-lg border border-blue-200">
+            <h3 class="text-lg font-bold text-blue-800 mb-2">Как пользоваться калькулятором:</h3>
+            <p class="text-gray-700 mb-2">Инструмент предназначен для подготовки расчетов к исковым заявлениям и претензиям. Введите сумму основного долга, выберите даты начала и окончания просрочки.</p>
+            <ul class="list-disc pl-5 text-sm text-gray-600 space-y-1 mt-3">
+                <li><strong>Ст. 395 ГК РФ:</strong> Используется при отсутствии в договоре условия о штрафах. Ставка ЦБ РФ выбирается автоматически по датам просрочки, если в периоде есть изменения — расчет разбивается на интервалы.</li>
+                <li><strong>Договорная неустойка:</strong> Применяется, если в договоре прописан конкретный процент (например, 0.1% за каждый день просрочки). Просто введите этот процент в поле ставки.</li>
+                <li><strong>Готовый расчет:</strong> Скопируйте сгенерированный текст из правого окна и вставьте его напрямую в обоснование вашего иска.</li>
+            </ul>
+        </div>
+
+        <div class="mt-8 text-right text-xs text-gray-400">
+            разработал Патрушев Е.
+        </div>
+    </div>
+
+    <script>
+        /*
+         * Таблица ставок ЦБ:
+         * Дата изменения,Ставка до,Ставка после,Изменение
+         * 2015 год,,,
+         * 02.02.2015,"17,00%","15,00%","−2,00%"
+         * 16.03.2015,"15,00%","14,00%","−1,00%"
+         * 05.05.2015,"14,00%","12,50%","−1,50%"
+         * 16.06.2015,"12,50%","11,50%","−1,00%"
+         * 03.08.2015,"11,50%","11,00%","−0,50%"
+         * 2016 год,,,
+         * 14.06.2016,"11,00%","10,50%","−0,50%"
+         * 19.09.2016,"10,50%","10,00%","−0,50%"
+         * 2017 год,,,
+         * 27.03.2017,"10,00%","9,75%","−0,25%"
+         * 02.05.2017,"9,75%","9,25%","−0,50%"
+         * 19.06.2017,"9,25%","9,00%","−0,25%"
+         * 18.09.2017,"9,00%","8,50%","−0,50%"
+         * 30.10.2017,"8,50%","8,25%","−0,25%"
+         * 18.12.2017,"8,25%","7,75%","−0,50%"
+         * 2018 год,,,
+         * 12.02.2018,"7,75%","7,50%","−0,25%"
+         * 26.03.2018,"7,50%","7,25%","−0,25%"
+         * 17.09.2018,"7,25%","7,50%","+0,25%"
+         * 17.12.2018,"7,50%","7,75%","+0,25%"
+         * 2019 год,,,
+         * 17.06.2019,"7,75%","7,50%","−0,25%"
+         * 29.07.2019,"7,50%","7,25%","−0,25%"
+         * 09.09.2019,"7,25%","7,00%","−0,25%"
+         * 28.10.2019,"7,00%","6,50%","−0,50%"
+         * 16.12.2019,"6,50%","6,25%","−0,25%"
+         * 2020 год,,,
+         * 10.02.2020,"6,25%","6,00%","−0,25%"
+         * 27.04.2020,"6,00%","5,50%","−0,50%"
+         * 22.06.2020,"5,50%","4,50%","−1,00%"
+         * 27.07.2020,"4,50%","4,25%","−0,25%"
+         * 2021 год,,,
+         * 22.03.2021,"4,25%","4,50%","+0,25%"
+         * 26.04.2021,"4,50%","5,00%","+0,50%"
+         * 15.06.2021,"5,00%","5,50%","+0,50%"
+         * 26.07.2021,"5,50%","6,50%","+1,00%"
+         * 13.09.2021,"6,50%","6,75%","+0,25%"
+         * 25.10.2021,"6,75%","7,50%","+0,75%"
+         * 20.12.2021,"7,50%","8,50%","+1,00%"
+         * 2022 год,,,
+         * 14.02.2022,"8,50%","9,50%","+1,00%"
+         * 28.02.2022,"9,50%","20,00%","+10,50%"
+         * 11.04.2022,"20,00%","17,00%","−3,00%"
+         * 04.05.2022,"17,00%","14,00%","−3,00%"
+         * 27.05.2022,"14,00%","11,00%","−3,00%"
+         * 14.06.2022,"11,00%","9,50%","−1,50%"
+         * 25.07.2022,"9,50%","8,00%","−1,50%"
+         * 19.09.2022,"8,00%","7,50%","−0,50%"
+         * 2023 год,,,
+         * 24.07.2023,"7,50%","8,50%","+1,00%"
+         * 15.08.2023,"8,50%","12,00%","+3,50%"
+         * 18.09.2023,"12,00%","13,00%","+1,00%"
+         * 30.10.2023,"13,00%","15,00%","+2,00%"
+         * 18.12.2023,"15,00%","16,00%","+1,00%"
+         * 2024 год,,,
+         * 29.07.2024,"16,00%","18,00%","+2,00%"
+         * 16.09.2024,"18,00%","19,00%","+1,00%"
+         * 28.10.2024,"19,00%","21,00%","+2,00%"
+         * 2025 год,,,
+         * 09.06.2025,"21,00%","20,00%","−1,00%"
+         * 28.07.2025,"20,00%","18,00%","−2,00%"
+         * 15.09.2025,"18,00%","17,00%","−1,00%"
+         * 27.10.2025,"17,00%","16,50%","−0,50%"
+         * 22.12.2025,"16,50%","16,00%","−0,50%"
+         * 2026 год,,,
+         * 16.02.2026,"16,00%","15,50%","−0,50%"
+         * 23.03.2026,"15,50%","15,00%","−0,50%"
+         */
+        const CBR_KEY_RATE_SCHEDULE = [
+            { from: '2015-01-01', rate: 17.0 },
+            { from: '2015-02-02', rate: 15.0 },
+            { from: '2015-03-16', rate: 14.0 },
+            { from: '2015-05-05', rate: 12.5 },
+            { from: '2015-06-16', rate: 11.5 },
+            { from: '2015-08-03', rate: 11.0 },
+            { from: '2016-06-14', rate: 10.5 },
+            { from: '2016-09-19', rate: 10.0 },
+            { from: '2017-03-27', rate: 9.75 },
+            { from: '2017-05-02', rate: 9.25 },
+            { from: '2017-06-19', rate: 9.0 },
+            { from: '2017-09-18', rate: 8.5 },
+            { from: '2017-10-30', rate: 8.25 },
+            { from: '2017-12-18', rate: 7.75 },
+            { from: '2018-02-12', rate: 7.5 },
+            { from: '2018-03-26', rate: 7.25 },
+            { from: '2018-09-17', rate: 7.5 },
+            { from: '2018-12-17', rate: 7.75 },
+            { from: '2019-06-17', rate: 7.5 },
+            { from: '2019-07-29', rate: 7.25 },
+            { from: '2019-09-09', rate: 7.0 },
+            { from: '2019-10-28', rate: 6.5 },
+            { from: '2019-12-16', rate: 6.25 },
+            { from: '2020-02-10', rate: 6.0 },
+            { from: '2020-04-27', rate: 5.5 },
+            { from: '2020-06-22', rate: 4.5 },
+            { from: '2020-07-27', rate: 4.25 },
+            { from: '2021-03-22', rate: 4.5 },
+            { from: '2021-04-26', rate: 5.0 },
+            { from: '2021-06-15', rate: 5.5 },
+            { from: '2021-07-26', rate: 6.5 },
+            { from: '2021-09-13', rate: 6.75 },
+            { from: '2021-10-25', rate: 7.5 },
+            { from: '2021-12-20', rate: 8.5 },
+            { from: '2022-02-14', rate: 9.5 },
+            { from: '2022-02-28', rate: 20.0 },
+            { from: '2022-04-11', rate: 17.0 },
+            { from: '2022-05-04', rate: 14.0 },
+            { from: '2022-05-27', rate: 11.0 },
+            { from: '2022-06-14', rate: 9.5 },
+            { from: '2022-07-25', rate: 8.0 },
+            { from: '2022-09-19', rate: 7.5 },
+            { from: '2023-07-24', rate: 8.5 },
+            { from: '2023-08-15', rate: 12.0 },
+            { from: '2023-09-18', rate: 13.0 },
+            { from: '2023-10-30', rate: 15.0 },
+            { from: '2023-12-18', rate: 16.0 },
+            { from: '2024-07-29', rate: 18.0 },
+            { from: '2024-09-16', rate: 19.0 },
+            { from: '2024-10-28', rate: 21.0 },
+            { from: '2025-06-09', rate: 20.0 },
+            { from: '2025-07-28', rate: 18.0 },
+            { from: '2025-09-15', rate: 17.0 },
+            { from: '2025-10-27', rate: 16.5 },
+            { from: '2025-12-22', rate: 16.0 },
+            { from: '2026-02-16', rate: 15.5 },
+            { from: '2026-03-23', rate: 15.0 }
+        ].map((entry) => ({
+            ...entry,
+            fromDate: parseLocalDate(entry.from)
+        }));
+
+        function parseLocalDate(value) {
+            const [year, month, day] = value.split('-').map(Number);
+            return new Date(year, month - 1, day);
+        }
+
+        function formatDate(value) {
+            return value.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        }
+
+        function addDays(date, daysToAdd) {
+            const result = new Date(date);
+            result.setDate(result.getDate() + daysToAdd);
+            return result;
+        }
+
+        function formatMoney(num) {
+            return num.toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        function addAdjustmentRow(containerId, kind, preset = {}) {
+            const container = document.getElementById(containerId);
+            const row = document.createElement('div');
+            row.className = 'grid grid-cols-[1fr_1fr_auto] gap-2 items-center adjustment-row';
+            row.dataset.kind = kind;
+            row.innerHTML = `
+                <input type="date" class="p-2 border border-gray-300 rounded text-sm adj-date" value="${preset.date || ''}">
+                <input type="number" min="0" step="0.01" class="p-2 border border-gray-300 rounded text-sm adj-amount" placeholder="Сумма, руб." value="${preset.amount || ''}">
+                <button type="button" class="text-red-500 hover:text-red-700 font-bold text-lg leading-none" title="Удалить">×</button>
+            `;
+            row.querySelector('button').addEventListener('click', () => row.remove());
+            container.appendChild(row);
+        }
+
+        function collectAdjustments(containerId, kind, startDate, endDate) {
+            const rows = Array.from(document.querySelectorAll(`#${containerId} .adjustment-row`));
+            const events = [];
+
+            for (const row of rows) {
+                const dateValue = row.querySelector('.adj-date').value;
+                const amountValue = parseFloat(row.querySelector('.adj-amount').value);
+                if (!dateValue && !row.querySelector('.adj-amount').value) {
+                    continue;
+                }
+                if (!dateValue || isNaN(amountValue) || amountValue <= 0) {
+                    alert('Пожалуйста, корректно заполните дату и сумму для всех дополнительных операций.');
+                    return null;
+                }
+                const eventDate = parseLocalDate(dateValue);
+                if (eventDate < startDate || eventDate > endDate) {
+                    alert('Дата частичной оплаты/дополнительной задолженности должна быть внутри периода просрочки.');
+                    return null;
+                }
+                events.push({ kind, date: eventDate, amount: amountValue, dateText: dateValue });
+            }
+
+            return events;
+        }
+
+        function daysInclusive(startDate, endDate) {
+            return Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 3600 * 24)) + 1;
+        }
+
+        function buildDebtSegments(startDate, endDate, baseDebt, type, manualRate, events) {
+            const boundaries = new Set([startDate.getTime(), addDays(endDate, 1).getTime()]);
+            const eventMap = new Map();
+
+            for (const event of events) {
+                const ts = event.date.getTime();
+                boundaries.add(ts);
+                if (!eventMap.has(ts)) {
+                    eventMap.set(ts, []);
+                }
+                eventMap.get(ts).push(event);
+            }
+
+            if (type === '395') {
+                for (const entry of CBR_KEY_RATE_SCHEDULE) {
+                    if (entry.fromDate > startDate && entry.fromDate <= endDate) {
+                        boundaries.add(entry.fromDate.getTime());
+                    }
+                }
+            }
+
+            const sortedBoundaries = Array.from(boundaries).sort((a, b) => a - b);
+            let currentDebt = baseDebt;
+            let penalty = 0;
+            const segments = [];
+
+            for (let i = 0; i < sortedBoundaries.length - 1; i++) {
+                const currentBoundary = sortedBoundaries[i];
+                const currentDate = new Date(currentBoundary);
+                const boundaryEvents = eventMap.get(currentBoundary) || [];
+                for (const event of boundaryEvents) {
+                    currentDebt += event.kind === 'addition' ? event.amount : -event.amount;
+                }
+
+                if (currentDebt < 0) {
+                    alert('Сумма частичных оплат превышает общую сумму задолженности в периоде.');
+                    return null;
+                }
+
+                const nextBoundary = sortedBoundaries[i + 1];
+                const segmentEnd = addDays(new Date(nextBoundary), -1);
+                if (segmentEnd < currentDate) {
+                    continue;
+                }
+
+                const segmentDays = daysInclusive(currentDate, segmentEnd);
+                const segmentRate = type === '395' ? getRateAtDate(currentDate) : manualRate;
+                if (segmentRate === null) {
+                    alert("Для выбранной даты нет данных по ставке ЦБ. Доступный период: с 01.01.2015.");
+                    return null;
+                }
+
+                const segmentPenalty = type === '395'
+                    ? (currentDebt * segmentRate / 100 / 365) * segmentDays
+                    : currentDebt * (segmentRate / 100) * segmentDays;
+
+                penalty += segmentPenalty;
+                segments.push({
+                    start: currentDate,
+                    end: segmentEnd,
+                    debt: currentDebt,
+                    rate: segmentRate,
+                    days: segmentDays,
+                    penalty: segmentPenalty
+                });
+            }
+
+            return { segments, penalty, currentDebt };
+        }
+
+        function getRateAtDate(date) {
+            let currentRate = null;
+
+            for (const entry of CBR_KEY_RATE_SCHEDULE) {
+                if (entry.fromDate <= date) {
+                    currentRate = entry.rate;
+                } else {
+                    break;
+                }
+            }
+
+            return currentRate;
+        }
+
+        function getRateSegments(startDate, endDate) {
+            const startRate = getRateAtDate(startDate);
+
+            if (startRate === null) {
+                return null;
+            }
+
+            const segments = [];
+            let segmentStart = new Date(startDate);
+            let currentRate = startRate;
+
+            for (const entry of CBR_KEY_RATE_SCHEDULE) {
+                if (entry.fromDate <= startDate || entry.fromDate > endDate) {
+                    continue;
+                }
+
+                const segmentEnd = addDays(entry.fromDate, -1);
+                if (segmentEnd >= segmentStart) {
+                    segments.push({
+                        start: new Date(segmentStart),
+                        end: segmentEnd,
+                        rate: currentRate
+                    });
+                }
+                segmentStart = new Date(entry.fromDate);
+                currentRate = entry.rate;
+            }
+
+            segments.push({
+                start: segmentStart,
+                end: new Date(endDate),
+                rate: currentRate
+            });
+
+            return segments;
+        }
+
+        function updateAutoRatePreview() {
+            const type = document.getElementById('inputType').value;
+            const rateInput = document.getElementById('inputRate');
+            const startDateStr = document.getElementById('inputStartDate').value;
+            const endDateStr = document.getElementById('inputEndDate').value;
+
+            if (type !== '395') {
+                return;
+            }
+
+            if (!startDateStr || !endDateStr) {
+                rateInput.value = '';
+                return;
+            }
+
+            const startDate = parseLocalDate(startDateStr);
+            const endDate = parseLocalDate(endDateStr);
+            if (endDate < startDate) {
+                rateInput.value = '';
+                return;
+            }
+
+            const segments = getRateSegments(startDate, endDate);
+            if (!segments) {
+                rateInput.value = '';
+                return;
+            }
+
+            const days = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 3600 * 24)) + 1;
+            const weightedRate = segments.reduce((sum, segment) => {
+                const segmentDays = Math.ceil((segment.end.getTime() - segment.start.getTime()) / (1000 * 3600 * 24)) + 1;
+                return sum + segment.rate * segmentDays;
+            }, 0) / days;
+
+            rateInput.value = weightedRate.toFixed(2);
+        }
+
+        // Изменение подписи поля "Ставка" в зависимости от выбранного типа
+        function toggleRateLabel() {
+            const type = document.getElementById('inputType').value;
+            const label = document.getElementById('rateLabel');
+            const input = document.getElementById('inputRate');
+            const hint = document.getElementById('rateHint');
+
+            if (type === '395') {
+                label.innerText = "Ставка ЦБ (% годовых):";
+                input.placeholder = "Ставка подставится автоматически";
+                input.readOnly = true;
+                hint.innerText = "Для ст. 395 ГК РФ ставка ЦБ определяется автоматически по выбранному периоду.";
+            } else {
+                label.innerText = "Размер пени по договору (% в день):";
+                input.placeholder = "Например: 0.1";
+                input.readOnly = false;
+                hint.innerText = "Для договорной неустойки укажите процент вручную.";
+            }
+
+            updateAutoRatePreview();
+        }
+
+        // Основная функция расчета
+        function calculatePenalty() {
+            const debt = parseFloat(document.getElementById('inputDebt').value);
+            const startDateStr = document.getElementById('inputStartDate').value;
+            const endDateStr = document.getElementById('inputEndDate').value;
+            const type = document.getElementById('inputType').value;
+            const rateInput = document.getElementById('inputRate');
+            const rate = parseFloat(rateInput.value);
+
+            // Валидация
+            if (isNaN(debt) || debt <= 0) {
+                alert("Пожалуйста, введите корректную сумму долга.");
+                return;
+            }
+            if (!startDateStr || !endDateStr) {
+                alert("Пожалуйста, укажите даты начала и окончания просрочки.");
+                return;
+            }
+            if (type === 'contract' && (isNaN(rate) || rate <= 0)) {
+                alert("Пожалуйста, введите корректную ставку.");
+                return;
+            }
+
+            const startDate = parseLocalDate(startDateStr);
+            const endDate = parseLocalDate(endDateStr);
+
+            const payments = collectAdjustments('paymentsBody', 'payment', startDate, endDate);
+            const additions = collectAdjustments('additionsBody', 'addition', startDate, endDate);
+            if (!payments || !additions) {
+                return;
+            }
+            const events = [...payments, ...additions];
+
+            // Расчет количества дней (включая день фактической оплаты/расчета)
+            const days = daysInclusive(startDate, endDate);
+
+            if (days <= 0) {
+                alert("Дата окончания просрочки не может быть раньше даты начала.");
+                return;
+            }
+
+            let penalty = 0;
+            let calculationText = "";
+
+            // Форматирование дат для текста (ДД.ММ.ГГГГ)
+            const startStrFormat = formatDate(startDate);
+            const endStrFormat = formatDate(endDate);
+
+            const detailedCalculation = buildDebtSegments(startDate, endDate, debt, type, rate, events);
+            if (!detailedCalculation) {
+                return;
+            }
+
+            const { segments, currentDebt } = detailedCalculation;
+            penalty = detailedCalculation.penalty;
+            const segmentLines = segments.map((segment) =>
+                `• ${formatDate(segment.start)}–${formatDate(segment.end)}: долг ${formatMoney(segment.debt)} руб., ` +
+                `${segment.rate.toFixed(2)}% × ${segment.days} дн. = ${formatMoney(segment.penalty)} руб.`
+            );
+            const eventLines = events
+                .sort((a, b) => a.date - b.date)
+                .map((event) => `• ${formatDate(event.date)}: ${event.kind === 'addition' ? 'добавлен долг' : 'частичная оплата'} ${formatMoney(event.amount)} руб.`);
+
+            if (type === '395') {
+                const weightedRate = segments.reduce((sum, segment) => sum + segment.rate * segment.days, 0) / days;
+                calculationText = `РАСЧЕТ ПРОЦЕНТОВ ЗА ПОЛЬЗОВАНИЕ ЧУЖИМИ ДЕНЕЖНЫМИ СРЕДСТВАМИ (ст. 395 ГК РФ)\n\n` +
+                                  `Сумма задолженности: ${formatMoney(debt)} руб.\n` +
+                                  `Период просрочки: с ${startStrFormat} по ${endStrFormat}\n` +
+                                  `Количество дней просрочки: ${days} дн.\n` +
+                                  `Средневзвешенная ставка ЦБ РФ за период: ${weightedRate.toFixed(2)}% годовых\n\n` +
+                                  `${eventLines.length ? `Изменения задолженности:\n${eventLines.join('\n')}\n\n` : ''}` +
+                                  `Формула: Сумма долга × (Ставка ЦБ / 365) × Дней просрочки\n` +
+                                  `Расчет по интервалам:\n${segmentLines.join('\n')}\n\n` +
+                                  `Итого к взысканию процентов: ${formatMoney(penalty)} руб.`;
+            } else {
+                calculationText = `РАСЧЕТ ДОГОВОРНОЙ НЕУСТОЙКИ (ПЕНИ)\n\n` +
+                                  `Сумма задолженности: ${formatMoney(debt)} руб.\n` +
+                                  `Период просрочки: с ${startStrFormat} по ${endStrFormat}\n` +
+                                  `Количество дней просрочки: ${days} дн.\n` +
+                                  `Размер договорной неустойки: ${rate}% за каждый день просрочки\n\n` +
+                                  `${eventLines.length ? `Изменения задолженности:\n${eventLines.join('\n')}\n\n` : ''}` +
+                                  `Формула: Сумма долга × Процент неустойки × Дней просрочки\n` +
+                                  `Расчет по интервалам:\n${segmentLines.join('\n')}\n\n` +
+                                  `Итого к взысканию пени: ${formatMoney(penalty)} руб.`;
+            }
+
+            const totalClaim = currentDebt + penalty;
+
+            // Вывод данных
+            document.getElementById('outDays').innerText = days;
+            document.getElementById('outPenalty').innerText = formatMoney(penalty);
+            document.getElementById('outTotal').innerText = formatMoney(totalClaim) + " руб.";
+            document.getElementById('outText').value = calculationText;
+
+            // Переключение видимости блоков
+            document.getElementById('resultPlaceholder').classList.add('hidden');
+            document.getElementById('resultContainer').classList.remove('hidden');
+            document.getElementById('resultContainer').classList.add('flex');
+        }
+
+        // Копирование текста в буфер обмена
+        function copyResult() {
+            const outText = document.getElementById('outText');
+            outText.select();
+            document.execCommand('copy');
+            
+            const btn = event.target;
+            const originalText = btn.innerText;
+            btn.innerText = "✅ Скопировано в буфер обмена!";
+            btn.classList.replace('text-indigo-700', 'text-green-700');
+            btn.classList.replace('border-indigo-600', 'border-green-600');
+            
+            setTimeout(() => {
+                btn.innerText = originalText;
+                btn.classList.replace('text-green-700', 'text-indigo-700');
+                btn.classList.replace('border-green-600', 'border-indigo-600');
+            }, 2000);
+        }
+
+        document.getElementById('inputStartDate').addEventListener('change', updateAutoRatePreview);
+        document.getElementById('inputEndDate').addEventListener('change', updateAutoRatePreview);
+
+        addAdjustmentRow('paymentsBody', 'payment');
+        addAdjustmentRow('additionsBody', 'addition');
+        toggleRateLabel();
+    </script>
+</body>
+<a href="index.html" class="inline-block mb-4 text-indigo-600 hover:text-indigo-800 font-bold">← На главную</a>
+</html>

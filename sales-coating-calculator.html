@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Калькулятор покрытия | Продажи | Россильбер</title>
+  <style>
+    :root {
+      --bg: #070b16;
+      --bg-2: #0c1324;
+      --card: #121a2b;
+      --card-2: #1a2234;
+      --line: #27324a;
+      --text: #e9edf5;
+      --muted: #a7afbf;
+      --accent: #4f8dff;
+      --accent-2: #9fc1ff;
+      --danger: #f87171;
+      color-scheme: dark;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Inter, "Segoe UI", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(900px 440px at 50% 0%, #18243c 0%, transparent 72%),
+        linear-gradient(180deg, var(--bg-2) 0%, var(--bg) 55%);
+      min-height: 100vh;
+    }
+
+    .wrap {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .topline {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 12px;
+      margin-bottom: 18px;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .topline a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 14px;
+    }
+
+    .title {
+      margin: 0 0 4px;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      font-size: clamp(22px, 2vw, 34px);
+    }
+
+    .subtitle {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.4;
+    }
+
+    .calculator-container {
+      width: 100%;
+      max-width: 560px;
+      margin: 20px auto 0;
+      padding: 24px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: linear-gradient(115deg, var(--card) 0%, var(--card-2) 100%);
+      box-shadow: 0 10px 24px rgba(3, 11, 31, 0.35);
+    }
+
+    h2 {
+      font-size: 1.15rem;
+      margin: 0 0 20px;
+      color: var(--text);
+      text-align: center;
+    }
+
+    .section-title {
+      margin: 18px 0 10px;
+      color: var(--accent-2);
+      font-size: 0.95em;
+      font-weight: 700;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 6px;
+    }
+
+    .form-group { margin-bottom: 14px; }
+
+    label {
+      display: block;
+      font-size: 0.9em;
+      margin-bottom: 6px;
+      color: var(--muted);
+    }
+
+    input,
+    select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #0d1423;
+      color: var(--text);
+      font-size: 14px;
+    }
+
+    .checkbox-group {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .checkbox-line {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.9em;
+      color: var(--text);
+    }
+
+    .checkbox-line input {
+      width: auto;
+      margin: 0;
+      accent-color: var(--accent);
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background-color: var(--accent);
+      color: #eef4ff;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 1em;
+      margin-top: 10px;
+      font-weight: 700;
+      transition: filter 0.2s ease, transform 0.2s ease;
+    }
+
+    button:hover {
+      filter: brightness(1.08);
+      transform: translateY(-1px);
+    }
+
+    .result-box {
+      margin-top: 20px;
+      padding: 15px;
+      background-color: rgba(13, 20, 35, 0.52);
+      border: 1px dashed var(--accent);
+      border-radius: 12px;
+      text-align: center;
+    }
+
+    #resultValue {
+      font-size: 1.5em;
+      font-weight: 700;
+      color: var(--accent-2);
+    }
+
+    #resultArea {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 0.95em;
+    }
+
+    .hint {
+      margin-top: 6px;
+      font-size: 0.8em;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+
+    .author {
+      text-align: center;
+      margin: 18px 0 0;
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+
+    .hidden { display: none; }
+
+    @media (max-width: 640px) {
+      .wrap { padding: 14px; }
+      .calculator-container { padding: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topline">
+      <a href="departments.html?dept=sales">← Назад в департамент «Продажи»</a>
+      <span style="color:#a7afbf;font-size:12px;">Проект: Калькулятор покрытия</span>
+    </div>
+
+    <h1 class="title">Калькулятор покрытия</h1>
+    <p class="subtitle">Расчет расхода материала для труб, резервуаров и кораблей с учетом толщины нанесения и запаса.</p>
+
+    <main>
+      <div class="calculator-container">
+        <h2>Расчет материала для покрытия</h2>
+
+        <div class="form-group">
+          <label for="objectType">Объект расчета</label>
+          <select id="objectType" onchange="renderForm()">
+            <option value="pipe">Трубы</option>
+            <option value="tank">Резервуары</option>
+            <option value="ship">Корабли</option>
+          </select>
+        </div>
+
+        <div id="pipeFields">
+          <div class="section-title">Параметры трубы</div>
+          <div class="form-group">
+            <label for="coatingType">Тип покрытия</label>
+            <select id="coatingType">
+              <option value="external">Внешнее покрытие</option>
+              <option value="internal">Внутреннее покрытие</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="lengthCm">Длина трубы (см)</label>
+            <input type="number" id="lengthCm" placeholder="0" step="any">
+          </div>
+
+          <div class="form-group">
+            <label for="diameterCm">Внешний диаметр трубы (см)</label>
+            <input type="number" id="diameterCm" placeholder="0" step="any">
+          </div>
+
+          <div class="form-group">
+            <label for="wallCm">Толщина стенки трубы (см)</label>
+            <input type="number" id="wallCm" placeholder="0" step="any">
+          </div>
+        </div>
+
+        <div id="tankFields" class="hidden">
+          <div class="section-title">Параметры резервуара (вертикальный цилиндр)</div>
+          <div class="form-group">
+            <label for="tankCoatingZone">Зона покрытия</label>
+            <select id="tankCoatingZone">
+              <option value="external">Только наружные поверхности</option>
+              <option value="internal">Только внутренние поверхности</option>
+              <option value="both">Наружные + внутренние</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="tankDiameterM">Диаметр резервуара (м)</label>
+            <input type="number" id="tankDiameterM" placeholder="0" step="any">
+          </div>
+          <div class="form-group">
+            <label for="tankHeightM">Высота цилиндрической части (м)</label>
+            <input type="number" id="tankHeightM" placeholder="0" step="any">
+          </div>
+          <div class="checkbox-group">
+            <label class="checkbox-line"><input type="checkbox" id="tankRoof" checked> Учитывать крышу резервуара</label>
+            <label class="checkbox-line"><input type="checkbox" id="tankBottom" checked> Учитывать днище резервуара</label>
+          </div>
+        </div>
+
+        <div id="shipFields" class="hidden">
+          <div class="section-title">Параметры корабля (оценочный метод)</div>
+          <div class="form-group">
+            <label for="shipLengthM">Длина между перпендикулярами Lpp (м)</label>
+            <input type="number" id="shipLengthM" placeholder="0" step="any">
+          </div>
+          <div class="form-group">
+            <label for="shipBeamM">Ширина B (м)</label>
+            <input type="number" id="shipBeamM" placeholder="0" step="any">
+          </div>
+          <div class="form-group">
+            <label for="shipDraftM">Осадка T (м)</label>
+            <input type="number" id="shipDraftM" placeholder="0" step="any">
+          </div>
+          <div class="form-group">
+            <label for="shipFreeboardM">Высота борта над ватерлинией F (м)</label>
+            <input type="number" id="shipFreeboardM" placeholder="0" step="any">
+          </div>
+          <div class="form-group">
+            <label for="shipSuperstructurePercent">Надстройки (% от площади палубы)</label>
+            <input type="number" id="shipSuperstructurePercent" placeholder="20" step="any" value="20">
+          </div>
+
+          <div class="checkbox-group">
+            <label class="checkbox-line"><input type="checkbox" id="zoneUnderwater" checked> Ниже ватерлинии (подводная часть корпуса)</label>
+            <label class="checkbox-line"><input type="checkbox" id="zoneAboveWater" checked> Выше ватерлинии (надводный борт)</label>
+            <label class="checkbox-line"><input type="checkbox" id="zoneDeck" checked> Палуба</label>
+            <label class="checkbox-line"><input type="checkbox" id="zoneSuperstructure" checked> Надстройки</label>
+          </div>
+          <div class="hint">
+            Для оценки используются распространенные инженерные приближения: смоченная поверхность корпуса,
+            площадь борта выше ватерлинии, эффективная площадь палубы и коэффициент надстроек.
+          </div>
+        </div>
+
+        <div class="section-title">Параметры нанесения</div>
+        <div class="form-group">
+          <label for="thicknessMicron">Стандарт нанесения (микроны)</label>
+          <input type="number" id="thicknessMicron" placeholder="0" step="any">
+        </div>
+
+        <div class="form-group">
+          <label for="errorPercent">Погрешность / запас материала (%)</label>
+          <input type="number" id="errorPercent" placeholder="0" step="any" value="5">
+        </div>
+
+        <button onclick="calculate()">Рассчитать</button>
+
+        <div class="result-box">
+          <label>Необходимый объем продукта:</label>
+          <div id="resultValue">0.0000 л</div>
+          <div id="resultArea">Площадь покрытия: 0.0000 м²</div>
+        </div>
+      </div>
+    </main>
+
+    <p class="author">разработал Патрушев Е.</p>
+  </div>
+
+  <script>
+    function renderForm() {
+      const objectType = document.getElementById('objectType').value;
+      document.getElementById('pipeFields').classList.toggle('hidden', objectType !== 'pipe');
+      document.getElementById('tankFields').classList.toggle('hidden', objectType !== 'tank');
+      document.getElementById('shipFields').classList.toggle('hidden', objectType !== 'ship');
+    }
+
+    function parsePositive(id, label) {
+      const value = parseFloat(document.getElementById(id).value);
+      if (!Number.isFinite(value) || value <= 0) {
+        throw new Error(`Поле «${label}» должно быть больше нуля`);
+      }
+      return value;
+    }
+
+    function calculatePipeArea() {
+      const type = document.getElementById('coatingType').value;
+      const lengthCm = parsePositive('lengthCm', 'Длина трубы');
+      const diameterCm = parsePositive('diameterCm', 'Внешний диаметр трубы');
+      const wallCm = parseFloat(document.getElementById('wallCm').value) || 0;
+
+      let dCalcCm = diameterCm;
+      if (type === 'internal') {
+        dCalcCm = diameterCm - (2 * wallCm);
+      }
+
+      if (dCalcCm <= 0) {
+        throw new Error('Ошибка: Внутренний диаметр не может быть меньше или равен нулю');
+      }
+
+      const lengthM = lengthCm / 100;
+      const dCalcM = dCalcCm / 100;
+      return Math.PI * dCalcM * lengthM;
+    }
+
+    function calculateTankArea() {
+      const zone = document.getElementById('tankCoatingZone').value;
+      const diameter = parsePositive('tankDiameterM', 'Диаметр резервуара');
+      const height = parsePositive('tankHeightM', 'Высота резервуара');
+      const includeRoof = document.getElementById('tankRoof').checked;
+      const includeBottom = document.getElementById('tankBottom').checked;
+
+      const shellArea = Math.PI * diameter * height;
+      const circleArea = Math.PI * Math.pow(diameter, 2) / 4;
+
+      let oneSideArea = shellArea;
+      if (includeRoof) oneSideArea += circleArea;
+      if (includeBottom) oneSideArea += circleArea;
+
+      if (zone === 'both') return oneSideArea * 2;
+      return oneSideArea;
+    }
+
+    function calculateShipArea() {
+      const L = parsePositive('shipLengthM', 'Длина Lpp');
+      const B = parsePositive('shipBeamM', 'Ширина B');
+      const T = parsePositive('shipDraftM', 'Осадка T');
+      const F = parsePositive('shipFreeboardM', 'Высота борта F');
+      const superPercent = parseFloat(document.getElementById('shipSuperstructurePercent').value) || 0;
+
+      const useUnderwater = document.getElementById('zoneUnderwater').checked;
+      const useAboveWater = document.getElementById('zoneAboveWater').checked;
+      const useDeck = document.getElementById('zoneDeck').checked;
+      const useSuper = document.getElementById('zoneSuperstructure').checked;
+
+      if (!useUnderwater && !useAboveWater && !useDeck && !useSuper) {
+        throw new Error('Выберите хотя бы одну зону покрытия корабля');
+      }
+
+      const Cw = 0.85;
+      const Ct = 0.90;
+      const Cd = 0.90;
+
+      const underwaterArea = L * (2 * T + B) * Cw;
+      const aboveWaterArea = 2 * L * F * Ct;
+      const deckArea = L * B * Cd;
+      const superstructureArea = deckArea * (superPercent / 100);
+
+      let total = 0;
+      if (useUnderwater) total += underwaterArea;
+      if (useAboveWater) total += aboveWaterArea;
+      if (useDeck) total += deckArea;
+      if (useSuper) total += superstructureArea;
+
+      return total;
+    }
+
+    function calculate() {
+      try {
+        const objectType = document.getElementById('objectType').value;
+        const thicknessMkr = parsePositive('thicknessMicron', 'Стандарт нанесения');
+        const errorPercent = parseFloat(document.getElementById('errorPercent').value) || 0;
+
+        let area = 0;
+        if (objectType === 'pipe') {
+          area = calculatePipeArea();
+        } else if (objectType === 'tank') {
+          area = calculateTankArea();
+        } else {
+          area = calculateShipArea();
+        }
+
+        const thicknessM = thicknessMkr / 1000000;
+        const litersBase = area * thicknessM * 1000;
+        const liters = litersBase * (1 + errorPercent / 100);
+
+        document.getElementById('resultValue').innerText = `${liters.toFixed(4)} л`;
+        document.getElementById('resultArea').innerText = `Площадь покрытия: ${area.toFixed(4)} м²`;
+      } catch (error) {
+        alert(error.message);
+      }
+    }
+
+    renderForm();
+  </script>
+</body>
+</html>

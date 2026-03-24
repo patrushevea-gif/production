@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Россильбер | HR‑Детектор AI</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/mammoth@1.8.0/mammoth.browser.min.js"></script>
+  <script type="module" src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.8.69/pdf.min.mjs"></script>
+  <style>
+    .gauge-track {
+      background: conic-gradient(#ef4444 0deg, #f97316 120deg, #22c55e 240deg, #22c55e 360deg);
+      mask: radial-gradient(circle at center, transparent 54%, black 55%);
+      -webkit-mask: radial-gradient(circle at center, transparent 54%, black 55%);
+    }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800 min-h-screen">
+  <main class="max-w-6xl mx-auto px-4 py-8 md:px-8">
+    <div class="mb-6">
+      <a href="hr.html" class="text-indigo-600 hover:text-indigo-800 font-semibold">← Назад в Персонал</a>
+    </div>
+
+    <header class="bg-white rounded-2xl p-6 md:p-8 border border-slate-200 shadow-sm mb-8">
+      <h1 class="text-3xl md:text-4xl font-extrabold text-indigo-900 mb-3">HR‑Детектор AI</h1>
+      <p class="text-slate-600 max-w-4xl">
+        Проверка резюме и сопроводительных писем на вероятность генерации нейросетью. Поддержка форматов: простой текст, PDF и Word (.docx).
+      </p>
+      <div class="mt-4 grid gap-3 md:grid-cols-2">
+        <div class="rounded-xl bg-indigo-50 border border-indigo-200 p-4 text-sm text-indigo-900">
+          <p class="font-semibold mb-1">Модель в браузере</p>
+          <p>Работает локально через WebLLM, без отправки данных на сервер.</p>
+        </div>
+        <div class="rounded-xl bg-amber-50 border border-amber-200 p-4 text-sm text-amber-900">
+          <p class="font-semibold mb-1">Только итоговый %</p>
+          <p>Интерфейс выводит только вероятность AI‑генерации в процентах.</p>
+        </div>
+      </div>
+    </header>
+
+    <section class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+        <h2 class="text-xl font-bold text-indigo-900 mb-4">1) Входные данные</h2>
+
+        <label for="fileInput" class="block text-sm font-semibold text-slate-700 mb-2">Файл (.txt, .docx, .pdf)</label>
+        <input id="fileInput" type="file" accept=".txt,.docx,.pdf" class="w-full mb-5 text-sm">
+
+        <label for="textInput" class="block text-sm font-semibold text-slate-700 mb-2">Или вставьте текст</label>
+        <textarea id="textInput" rows="14" class="w-full border border-slate-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-indigo-400" placeholder="Вставьте текст резюме..."></textarea>
+
+        <div class="mt-4 space-y-2">
+          <button id="loadBtn" class="w-full bg-slate-900 hover:bg-black text-white font-semibold rounded-xl px-4 py-3 transition">Загрузить модель</button>
+          <button id="analyzeBtn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl px-4 py-3 transition" disabled>Рассчитать % AI</button>
+        </div>
+
+        <div class="mt-4 text-sm rounded-xl border border-slate-200 bg-slate-50 p-4">
+          <p class="font-semibold text-slate-700">Статус модели: <span id="statusText" class="text-slate-900">Не загружена</span></p>
+          <div id="progressWrap" class="hidden mt-3">
+            <div class="h-2 w-full bg-slate-200 rounded-full overflow-hidden">
+              <div id="progressBar" class="h-2 bg-indigo-600 transition-all duration-300" style="width: 0%"></div>
+            </div>
+            <p id="progressText" class="mt-2 text-xs text-slate-600">0%</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+        <h2 class="text-xl font-bold text-indigo-900 mb-4">2) Результат</h2>
+
+        <div class="flex flex-col items-center justify-center gap-5 py-6">
+          <div class="relative h-52 w-52 rounded-full gauge-track border border-slate-200">
+            <div class="absolute inset-0 flex flex-col items-center justify-center text-center">
+              <p class="text-xs uppercase tracking-wider text-slate-500">Вероятность AI</p>
+              <p id="percentValue" class="text-5xl font-extrabold text-slate-900">—%</p>
+            </div>
+          </div>
+          <p id="resultLabel" class="text-sm text-slate-600">Загрузите модель и выполните анализ.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script type="module">
+    import { CreateMLCEngine } from 'https://esm.run/@mlc-ai/web-llm';
+
+    const MODEL_CANDIDATES = [
+      'Qwen2.5-0.5B-Instruct-q4f16_1-MLC',
+      'Llama-3.2-1B-Instruct-q4f16_1-MLC',
+      'Phi-3.5-mini-instruct-q4f16_1-MLC'
+    ];
+
+    const SYSTEM_PROMPT = `Ты HR-детектор AI текста. На входе резюме. Верни только JSON формата {"ai_probability": N}. N — целое от 0 до 100. Никаких пояснений, текста, markdown, комментариев.`;
+
+    const fileInput = document.getElementById('fileInput');
+    const textInput = document.getElementById('textInput');
+    const loadBtn = document.getElementById('loadBtn');
+    const analyzeBtn = document.getElementById('analyzeBtn');
+    const statusText = document.getElementById('statusText');
+    const progressWrap = document.getElementById('progressWrap');
+    const progressBar = document.getElementById('progressBar');
+    const progressText = document.getElementById('progressText');
+    const percentValue = document.getElementById('percentValue');
+    const resultLabel = document.getElementById('resultLabel');
+
+    let engine = null;
+    let modelName = null;
+    let loading = false;
+
+    function clamp(value, min, max) {
+      return Math.max(min, Math.min(max, value));
+    }
+
+    function setProgress(percent, text) {
+      const pct = clamp(Math.round(percent), 0, 100);
+      progressBar.style.width = `${pct}%`;
+      progressText.textContent = text || `${pct}%`;
+    }
+
+    async function extractTextFromPdf(file) {
+      const pdfjsLib = window['pdfjs-dist/build/pdf'];
+      if (!pdfjsLib) throw new Error('PDF модуль не загружен');
+
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.8.69/pdf.worker.min.mjs';
+      const buffer = await file.arrayBuffer();
+      const pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
+
+      let fullText = '';
+      for (let pageNum = 1; pageNum <= pdf.numPages; pageNum += 1) {
+        const page = await pdf.getPage(pageNum);
+        const content = await page.getTextContent();
+        const pageText = content.items.map((item) => item.str).join(' ');
+        fullText += ` ${pageText}`;
+      }
+
+      return fullText.trim();
+    }
+
+    async function readInputText() {
+      const directText = textInput.value.trim();
+      if (directText) return directText;
+
+      const file = fileInput.files?.[0];
+      if (!file) throw new Error('Добавьте текст или загрузите файл');
+
+      const name = file.name.toLowerCase();
+      if (name.endsWith('.txt')) return (await file.text()).trim();
+      if (name.endsWith('.docx')) {
+        const arrayBuffer = await file.arrayBuffer();
+        const result = await window.mammoth.extractRawText({ arrayBuffer });
+        return (result.value || '').trim();
+      }
+      if (name.endsWith('.pdf')) return extractTextFromPdf(file);
+
+      throw new Error('Неподдерживаемый формат. Используйте .txt, .docx или .pdf');
+    }
+
+    function parsePercent(rawText) {
+      const trimmed = rawText.trim();
+      try {
+        const parsed = JSON.parse(trimmed);
+        if (typeof parsed.ai_probability === 'number') {
+          return clamp(Math.round(parsed.ai_probability), 0, 100);
+        }
+      } catch (_) {
+        const jsonLike = trimmed.match(/\{[\s\S]*\}/);
+        if (jsonLike) {
+          try {
+            const parsed = JSON.parse(jsonLike[0]);
+            if (typeof parsed.ai_probability === 'number') {
+              return clamp(Math.round(parsed.ai_probability), 0, 100);
+            }
+          } catch (_) {
+            // ignore
+          }
+        }
+      }
+
+      const numberMatch = trimmed.match(/(\d{1,3})/);
+      if (!numberMatch) throw new Error('Модель не вернула процент');
+      return clamp(Number(numberMatch[1]), 0, 100);
+    }
+
+    async function loadModel() {
+      if (loading) return;
+
+      loading = true;
+      loadBtn.disabled = true;
+      analyzeBtn.disabled = true;
+      progressWrap.classList.remove('hidden');
+      statusText.textContent = 'Загрузка модели...';
+      setProgress(0, 'Подготовка...');
+
+      try {
+        let lastError = null;
+
+        for (const candidate of MODEL_CANDIDATES) {
+          try {
+            setProgress(0, `Пробуем: ${candidate}`);
+            engine = await CreateMLCEngine(candidate, {
+              initProgressCallback: (info) => {
+                const p = (info.progress || 0) * 100;
+                setProgress(p, info.text || `Загрузка ${Math.round(p)}%`);
+              }
+            });
+            modelName = candidate;
+            break;
+          } catch (error) {
+            lastError = error;
+          }
+        }
+
+        if (!engine) {
+          throw lastError || new Error('Не удалось загрузить модель');
+        }
+
+        statusText.textContent = `Готово: ${modelName}`;
+        setProgress(100, 'Модель загружена');
+        analyzeBtn.disabled = false;
+      } catch (error) {
+        statusText.textContent = `Ошибка: ${error.message}`;
+        setProgress(0, 'Ошибка загрузки');
+        engine = null;
+        modelName = null;
+      } finally {
+        loading = false;
+        loadBtn.disabled = false;
+      }
+    }
+
+    async function analyzeResume() {
+      if (!engine) {
+        resultLabel.textContent = 'Сначала загрузите модель.';
+        return;
+      }
+
+      analyzeBtn.disabled = true;
+      loadBtn.disabled = true;
+      statusText.textContent = 'Анализ текста...';
+      resultLabel.textContent = 'Выполняется расчёт...';
+
+      try {
+        const inputText = await readInputText();
+        if (!inputText) throw new Error('Пустой текст');
+
+        const completion = await engine.chat.completions.create({
+          messages: [
+            { role: 'system', content: SYSTEM_PROMPT },
+            { role: 'user', content: inputText.slice(0, 12000) }
+          ],
+          temperature: 0,
+          max_tokens: 40,
+          stream: false
+        });
+
+        const raw = completion.choices?.[0]?.message?.content || '';
+        const percent = parsePercent(raw);
+
+        percentValue.textContent = `${percent}%`;
+        resultLabel.textContent = 'Результат рассчитан.';
+        statusText.textContent = `Готово: ${modelName}`;
+      } catch (error) {
+        resultLabel.textContent = `Ошибка анализа: ${error.message}`;
+      } finally {
+        analyzeBtn.disabled = false;
+        loadBtn.disabled = false;
+      }
+    }
+
+    loadBtn.addEventListener('click', loadModel);
+    analyzeBtn.addEventListener('click', analyzeResume);
+  </script>
+</body>
+</html>

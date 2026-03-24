@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Россильбер | Направление</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-1: #02091c;
+      --bg-2: #061533;
+      --card: #0d1c39;
+      --card-border: rgba(123, 159, 235, 0.24);
+      --text: #eaf1ff;
+      --muted: #a5b3cf;
+      --primary: #4f8dff;
+      --accent: #9fc1ff;
+      color-scheme: dark;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, "Segoe UI", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(900px 500px at 8% -10%, #15336e 0%, transparent 60%),
+        linear-gradient(180deg, var(--bg-2) 0%, var(--bg-1) 58%);
+      min-height: 100vh;
+    }
+
+    .bg-grid {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.18;
+      background-image:
+        linear-gradient(to right, rgba(94, 140, 233, 0.2) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(94, 140, 233, 0.2) 1px, transparent 1px);
+      background-size: 32px 32px;
+      z-index: 0;
+    }
+
+    .shell-header,
+    .layout {
+      position: relative;
+      z-index: 1;
+      max-width: 1440px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .shell-header {
+      position: sticky;
+      top: 0;
+      padding: 1.25rem 2rem;
+      border-bottom: 1px solid var(--card-border);
+      backdrop-filter: blur(12px);
+      background: rgba(2, 9, 28, 0.78);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--card-border);
+      padding-bottom: 16px;
+      margin-bottom: 30px;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .brand__title {
+      margin: 0;
+      font-family: "Space Grotesk", Inter, sans-serif;
+      font-size: clamp(1.25rem, 2.2vw, 2rem);
+      letter-spacing: 0.02em;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-left: auto;
+    }
+
+    .search {
+      border: 1px solid rgba(79, 141, 255, 0.38);
+      background: rgba(6, 20, 51, 0.7);
+      border-radius: 0.75rem;
+      min-width: 320px;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0 0.75rem;
+      color: var(--muted);
+    }
+
+    .search input {
+      width: 100%;
+      border: 0;
+      outline: 0;
+      background: transparent;
+      color: var(--text);
+      font-size: 0.92rem;
+      padding: 0.7rem 0;
+    }
+
+    .btn {
+      text-decoration: none;
+      border: 1px solid var(--card-border);
+      color: var(--text);
+      border-radius: 0.75rem;
+      background: rgba(10, 24, 56, 0.85);
+      padding: 0.72rem 1rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+      white-space: nowrap;
+      transition: 0.2s ease;
+      cursor: pointer;
+    }
+
+    .btn:hover { border-color: var(--primary); transform: translateY(-1px); }
+
+    .badge {
+      border: 1px solid var(--card-border);
+      border-radius: 999px;
+      padding: 8px 14px;
+      color: var(--muted);
+      font-size: 12px;
+      background: rgba(10, 24, 56, 0.75);
+      backdrop-filter: blur(1px);
+    }
+
+    .content { padding: 1rem; }
+
+    .section-title {
+      margin: 0;
+      font-size: clamp(1.6rem, 2.1vw, 2.1rem);
+    }
+
+    .subtitle {
+      margin: 0.45rem 0 0.8rem;
+      color: var(--muted);
+      font-size: 1rem;
+    }
+
+    .toolbar {
+      margin: 0 0 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.8rem;
+      flex-wrap: wrap;
+    }
+
+    .info-chip {
+      border: 1px solid var(--card-border);
+      border-radius: 999px;
+      padding: 0.5rem 0.8rem;
+      color: var(--muted);
+      font-size: 0.82rem;
+      background: rgba(10, 24, 56, 0.6);
+    }
+
+    .project-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 0.9rem;
+    }
+
+    .project-card {
+      min-height: 178px;
+      border-radius: 14px;
+      border: 1px solid var(--card-border);
+      background: linear-gradient(130deg, rgba(13, 28, 57, 0.95), rgba(12, 28, 64, 0.5));
+      text-decoration: none;
+      color: inherit;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      transition: .2s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-1px);
+      border-color: var(--primary);
+      box-shadow: 0 10px 24px rgba(3, 11, 31, 0.45);
+    }
+
+    .card-head {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .icon { font-size: 24px; line-height: 1; }
+    .card h3 { margin: 0; font-size: 18px; line-height: 1.2; }
+    .card p { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.4; }
+    .hint { margin-top: auto; color: var(--accent); font-size: 13px; }
+
+    .empty {
+      border: 1px dashed var(--card-border);
+      border-radius: 14px;
+      padding: 18px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    dialog {
+      width: min(560px, 94vw);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      background: #0d1c39;
+      color: var(--text);
+      padding: 0;
+    }
+
+    dialog::backdrop { background: rgba(0, 0, 0, .58); }
+
+    .modal-body { padding: 18px; }
+    .modal-head { display: flex; justify-content: space-between; align-items: center; }
+    .modal-head h3 { margin: 0; }
+
+    .close {
+      border: 0;
+      background: transparent;
+      color: var(--muted);
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .field { margin-top: 12px; }
+    label { display: block; margin-bottom: 6px; font-size: 13px; color: var(--muted); }
+
+    input, textarea {
+      width: 100%;
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 10px 11px;
+      background: rgba(5, 19, 49, 0.55);
+      color: var(--text);
+      font: inherit;
+      font-size: 14px;
+    }
+
+    textarea { min-height: 86px; resize: vertical; }
+    .actions { margin-top: 14px; display: flex; justify-content: flex-end; gap: 8px; }
+    .ghost {
+      border: 0;
+      background: rgba(20, 35, 72, 0.8);
+      color: var(--text);
+      border-radius: 10px;
+      padding: 10px 13px;
+      cursor: pointer;
+    }
+
+    @media (max-width: 1200px) { .project-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+
+    @media (max-width: 980px) {
+      .layout { grid-template-columns: 1fr; }
+      .shell-header { flex-direction: column; align-items: flex-start; }
+      .header-actions { width: 100%; }
+      .search { min-width: 100%; }
+    }
+
+    @media (max-width: 760px) {
+      .project-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .header-actions { flex-direction: column; align-items: stretch; }
+    }
+
+    @media (max-width: 620px) { .project-grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <div class="bg-grid" aria-hidden="true"></div>
+
+  <header class="shell-header">
+    <h1 class="brand__title">Корпоративный портал Россильбер</h1>
+    <div class="header-actions">
+      <label class="search" aria-label="Поиск по проектам и направлениям">
+        🔎
+        <input id="global-search" type="search" placeholder="Поиск по проектам и направлениям">
+      </label>
+      <a class="btn" href="index.html">На главную</a>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="content">
+      <h2 class="section-title" id="dept-title"></h2>
+      <p id="subtitle" class="subtitle"></p>
+
+      <div class="toolbar">
+        <div class="info-chip" id="counter"></div>
+        <button id="addProjectBtn" class="btn" type="button">+ Добавить проект</button>
+      </div>
+
+      <main id="projectsGrid" class="project-grid"></main>
+      <div id="emptyState" class="empty" hidden>Пока нет проектов. Добавьте первый проект кнопкой «Добавить проект».</div>
+    </section>
+  </main>
+
+  <dialog id="projectDialog">
+    <form class="modal-body" id="projectForm">
+      <div class="modal-head">
+        <h3>Новый проект</h3>
+        <button class="close" type="button" id="closeDialog">×</button>
+      </div>
+
+      <div class="field">
+        <label for="title">Название проекта</label>
+        <input id="title" name="title" required maxlength="70" placeholder="Например: Аналитика договоров">
+      </div>
+
+      <div class="field">
+        <label for="description">Описание</label>
+        <textarea id="description" name="description" required maxlength="220" placeholder="Коротко: что делает проект"></textarea>
+      </div>
+
+      <div class="field">
+        <label for="url">Ссылка (файл/URL)</label>
+        <input id="url" name="url" required placeholder="Например: my-project.html или https://...">
+      </div>
+
+      <div class="field">
+        <label for="icon">Иконка (emoji)</label>
+        <input id="icon" name="icon" maxlength="4" placeholder="🧩">
+      </div>
+
+      <div class="actions">
+        <button type="button" class="ghost" id="cancelBtn">Отмена</button>
+        <button type="submit" class="btn">Сохранить</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script>
+    const DEPARTMENTS = {
+      beloretsk: { name: 'Производство Белорецк', subtitle: 'Проекты производственной площадки', icon: '🏭', projects: [] },
+      technopark: { name: 'Производство Технопарк', subtitle: 'Проекты технологической площадки', icon: '🏗️', projects: [] },
+      rnd: { name: 'RnD и Технология', subtitle: 'Исследования и технологические инициативы', icon: '🔬', projects: [] },
+      sales: {
+        name: 'Продажи',
+        subtitle: 'Проекты коммерческого блока',
+        icon: '📈',
+        projects: [
+          { title: 'Визуализация клиентов на карте', description: 'Интерактивная карта РФ и СНГ для добавления и удаления заводов клиентов.', url: 'sales-map.html', icon: '🗺️' },
+          { title: 'Калькулятор покрытия', description: 'Расчет расхода материала для покрытия труб, резервуаров и кораблей.', url: 'sales-coating-calculator.html', icon: '🧮' }
+        ]
+      },
+      supply: { name: 'Снабжение', subtitle: 'Закупки, логистика и поставки', icon: '📦', projects: [] },
+      development: { name: 'Развитие', subtitle: 'Стратегические и проектные инициативы', icon: '🚀', projects: [] },
+      efficiency: { name: 'Операционная эффективность', subtitle: 'Оптимизация процессов и ресурсов', icon: '⚙️', projects: [] },
+      hr: {
+        name: 'Персонал',
+        subtitle: 'Корпоративный портал департамента персонала',
+        icon: '👥',
+        projects: [
+          { title: 'Калькулятор выплат', description: 'Быстрый расчет отпускных и больничных на основе средней заработной платы.', url: 'rasch.html', icon: '🧮' },
+          { title: 'HR-Детектор AI', description: 'Анализ резюме (TXT/DOCX/PDF) или свободного текста: оценка уникальности и вероятности AI-генерации с дисклеймером.', url: 'hr-ai-detector.html', icon: '🕵️‍♀️' }
+        ]
+      },
+      finance: { name: 'Финансы', subtitle: 'Финансовая отчетность и контроль', icon: '💰', projects: [] },
+      security: {
+        name: 'Безопасность',
+        subtitle: 'Защита активов и контроль рисков',
+        icon: '🛡️',
+        projects: [
+          { title: 'Создание надежного пароля', description: 'Генератор сложного пароля на основе пользовательской переменной без предустановленных значений.', url: 'password-builder.html', icon: '🔐' },
+          { title: 'Детектор фишинговых писем', description: 'Анализ текста, скриншота или PDF через WebLLM с оценкой риска, признаками фишинга и рекомендацией на русском языке.', url: 'security-phishing-detector.html', icon: '📨' }
+        ]
+      },
+      hse: { name: 'СОТПБ и ЭБ', subtitle: 'Охрана труда, безопасность и экология', icon: '🦺', projects: [] },
+      legal: {
+        name: 'Право',
+        subtitle: 'Корпоративный портал юридического департамента',
+        icon: '⚖️',
+        projects: [
+          { title: 'Автозаполнение', description: 'Автоматическая вставка реквизитов из карточки в Word-шаблон договора.', url: 'filler.html', icon: '📝' },
+          { title: 'Сравнение версий', description: 'Поиск удаленных и добавленных пунктов между версиями документа.', url: 'diff.html', icon: '🔍' },
+          { title: 'Обезличивание', description: 'Удаление персональных данных для публикации и передачи документов.', url: 'redact.html', icon: '🔒' },
+          { title: 'Калькулятор пеней', description: 'Расчет неустойки с формулой для искового заявления.', url: 'calculator.html', icon: '🧮' },
+          { title: 'Мониторинг', description: 'Проверка ИНН по базам арбитража, банкротства и исполнительных производств.', url: 'monitor.html', icon: '🏢' },
+          { title: 'Распознавание (OCR)', description: 'Перевод сканов и PDF в редактируемый текст без отправки на сервер.', url: 'ocr.html', icon: '👁️' },
+          { title: 'Конструктор PDF', description: 'Разделение документов и удаление страниц прямо в браузере.', url: 'pdf.html', icon: '📑' },
+          { title: 'Разница дат (РФ)', description: 'Расчет календарных и рабочих дней между датами с учетом выходных и праздников РФ.', url: 'legal-date-diff.html', icon: '📅' },
+          { title: 'Юридический помощник', description: 'Умный FAQ по трудовым вопросам: быстрые справки, шаблоны заявлений и обучение по compliance.', url: 'legal-assistant.html', icon: '🤖' },
+          { title: 'Санкционный чекер', description: 'Проверка контрагента по ИНН или названию: быстрые ссылки на международные и российские санкционные базы.', url: 'sanctions-checker/index.html', icon: '🚫' }
+        ]
+      },
+      it: { name: 'ИТ', subtitle: 'Цифровая инфраструктура и поддержка', icon: '💻', projects: [] },
+      admin: { name: 'Администрирование', subtitle: 'Офисные сервисы и внутренние процессы', icon: '📁', projects: [] },
+      tech_policy: { name: 'Техническая политика', subtitle: 'Модернизация, стандарты и развитие технологий', icon: '🛠️', projects: [] },
+      ai: {
+        name: 'Искусственный интеллект',
+        subtitle: 'ИИ и автоматизация',
+        icon: '🧠',
+        projects: [
+          { title: 'Универсальный конвертер', description: 'Безопасная конвертация кода и файлов различных форматов.', url: 'konvert.html', icon: '🔄' }
+        ]
+      }
+    };
+
+    const SALES_FALLBACK_PROJECT = {
+      title: 'Визуализация клиентов на карте',
+      description: 'Интерактивная карта РФ и СНГ для добавления и удаления заводов клиентов.',
+      url: 'sales-map.html',
+      icon: '🗺️'
+    };
+
+    function getBaseProjectsByDepartment(key, department) {
+      const list = Array.isArray(department.projects) ? [...department.projects] : [];
+      if (key === 'sales' && !list.some((project) => project.url === SALES_FALLBACK_PROJECT.url)) {
+        list.unshift(SALES_FALLBACK_PROJECT);
+      }
+      return list;
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    const deptKey = params.get('dept') || 'legal';
+    const dept = DEPARTMENTS[deptKey] || DEPARTMENTS.legal;
+    const storageKey = `corp_projects_${deptKey}`;
+
+    const deptTitle = document.getElementById('dept-title');
+    const deptSubtitle = document.getElementById('subtitle');
+    const counter = document.getElementById('counter');
+    const grid = document.getElementById('projectsGrid');
+    const emptyState = document.getElementById('emptyState');
+    const searchInput = document.getElementById('global-search');
+
+    document.title = `Россильбер | ${dept.name}`;
+    deptTitle.textContent = `${dept.icon} ${dept.name}`;
+    deptSubtitle.textContent = dept.subtitle;
+
+    function readCustomProjects() {
+      try {
+        const parsed = JSON.parse(localStorage.getItem(storageKey) || '[]');
+        return Array.isArray(parsed) ? parsed : [];
+      } catch (error) {
+        console.warn('Некорректные данные проектов в localStorage, сброс к пустому списку.', error);
+        return [];
+      }
+    }
+
+    function renderDepartmentNav() {
+      const nav = document.getElementById('dept-nav');
+      if (!nav) {
+        return;
+      }
+
+      nav.innerHTML = '';
+      Object.entries(DEPARTMENTS).forEach(([key, item]) => {
+        const button = document.createElement('button');
+        button.className = 'nav-btn';
+        button.type = 'button';
+        button.textContent = item.name;
+        button.classList.toggle('active', key === deptKey);
+        button.addEventListener('click', () => {
+          window.location.href = `departments.html?dept=${key}`;
+        });
+        nav.appendChild(button);
+      });
+    }
+
+    function renderProjects(query = '') {
+      grid.innerHTML = '';
+      const currentCustom = readCustomProjects();
+      const baseProjects = getBaseProjectsByDepartment(deptKey, dept);
+      const merged = [...baseProjects, ...currentCustom];
+      const normalizedQuery = query.trim().toLowerCase();
+      const filtered = normalizedQuery
+        ? merged.filter((project) => `${project.title} ${project.description}`.toLowerCase().includes(normalizedQuery))
+        : merged;
+
+      counter.textContent = `Направление: ${dept.name} · Проектов: ${filtered.length}`;
+
+      if (!filtered.length) {
+        emptyState.hidden = false;
+        return;
+      }
+
+      emptyState.hidden = true;
+
+      filtered.forEach((project) => {
+        const card = document.createElement('a');
+        card.className = 'project-card';
+        card.href = project.url;
+        card.target = project.url.startsWith('http') ? '_blank' : '_self';
+        card.rel = project.url.startsWith('http') ? 'noopener noreferrer' : '';
+        card.innerHTML = `
+          <div class="card-head">
+            <div class="icon">${project.icon || '🧩'}</div>
+            <h3>${project.title}</h3>
+          </div>
+          <p>${project.description}</p>
+          <div class="hint">Открыть проект →</div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    const dialog = document.getElementById('projectDialog');
+    const form = document.getElementById('projectForm');
+    const addBtn = document.getElementById('addProjectBtn');
+
+    addBtn.addEventListener('click', () => dialog.showModal());
+    document.getElementById('closeDialog').addEventListener('click', () => dialog.close());
+    document.getElementById('cancelBtn').addEventListener('click', () => dialog.close());
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const data = new FormData(form);
+      const project = {
+        title: data.get('title').trim(),
+        description: data.get('description').trim(),
+        url: data.get('url').trim(),
+        icon: (data.get('icon') || '').trim() || '🧩'
+      };
+
+      const projects = readCustomProjects();
+      projects.push(project);
+      localStorage.setItem(storageKey, JSON.stringify(projects));
+
+      form.reset();
+      dialog.close();
+      renderProjects(searchInput.value);
+    });
+
+    searchInput.addEventListener('input', () => {
+      renderProjects(searchInput.value);
+    });
+
+    searchInput.addEventListener('keydown', (event) => {
+      if (event.key !== 'Enter') {
+        return;
+      }
+
+      const query = searchInput.value.trim().toLowerCase();
+      if (!query) {
+        return;
+      }
+
+      const matchedDepartment = Object.entries(DEPARTMENTS).find(([, item]) => item.name.toLowerCase().includes(query));
+      if (matchedDepartment && matchedDepartment[0] !== deptKey) {
+        window.location.href = `departments.html?dept=${matchedDepartment[0]}`;
+      }
+    });
+
+    renderDepartmentNav();
+    renderProjects();
+  </script>
+</body>
+</html>
