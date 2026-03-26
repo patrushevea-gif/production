@@ -1,480 +1,486 @@
 <!DOCTYPE html>
-<html class="dark" lang="ru">
+<html lang="ru">
 <head>
   <meta charset="utf-8"/>
-  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Rossilber — Корпоративный портал</title>
-  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
-  <script>
-    tailwind.config = {
-      darkMode: "class",
-      theme: {
-        extend: {
-          colors: {
-            "neon-blue":   "#00e5ff",
-            "neon-purple": "#a855f7",
-            "neon-violet": "#7c3aed",
-            "deep-bg":     "#05050f",
-            "panel":       "#0b0b1e",
-            "panel-high":  "#10102a",
-            "panel-border":"#1a1a40",
-            "text-primary":"#e0e7ff",
-            "text-muted":  "#6b7280",
-          },
-          fontFamily: {
-            headline: ["Plus Jakarta Sans", "sans-serif"],
-            body:     ["Inter", "sans-serif"],
-            mono:     ["JetBrains Mono", "monospace"],
-          },
-          animation: {
-            "pulse-slow": "pulse 4s cubic-bezier(0.4,0,0.6,1) infinite",
-            "float": "float 6s ease-in-out infinite",
-          },
-          keyframes: {
-            float: {
-              "0%,100%": { transform: "translateY(0px)" },
-              "50%":     { transform: "translateY(-6px)" },
-            }
-          }
-        }
-      }
-    };
-  </script>
   <style>
-    * { box-sizing: border-box; }
-    body {
-      font-family: 'Inter', sans-serif;
-      background: #05050f;
-      color: #e0e7ff;
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:          #0c0c0e;
+      --bg-panel:    #111115;
+      --bg-card:     #16161a;
+      --bg-card-hov: #1c1c22;
+      --border:      rgba(255,255,255,.07);
+      --border-hov:  rgba(249,115,22,.5);
+      --accent:      #f97316;
+      --accent-dim:  rgba(249,115,22,.12);
+      --text-1:      #f0f0f2;
+      --text-2:      #8b8b9a;
+      --text-3:      #454550;
+      --sidebar-w:   210px;
+    }
+
+    html, body {
+      height: 100%;
+      overflow: hidden;
+      background: var(--bg);
+      color: var(--text-1);
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 13px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Layout shell ────────────────────────────────────── */
+    .shell {
+      display: flex;
+      height: 100vh;
       overflow: hidden;
     }
-    h1, h2, h3, h4 { font-family: 'Plus Jakarta Sans', sans-serif; }
 
-    /* ── Grid canvas background ─────────────────────────── */
-    .grid-canvas {
-      background-image:
-        linear-gradient(rgba(0,229,255,.04) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0,229,255,.04) 1px, transparent 1px);
-      background-size: 40px 40px;
-    }
-
-    /* ── Neon glow helpers ──────────────────────────────── */
-    .glow-blue   { box-shadow: 0 0 16px rgba(0,229,255,.35); }
-    .glow-purple { box-shadow: 0 0 16px rgba(168,85,247,.35); }
-    .text-gradient-bp {
-      background: linear-gradient(90deg, #00e5ff, #a855f7);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-    .text-gradient-pb {
-      background: linear-gradient(90deg, #a855f7, #00e5ff);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-
-    /* ── Sidebar ────────────────────────────────────────── */
+    /* ── Sidebar ─────────────────────────────────────────── */
     .sidebar {
-      background: linear-gradient(180deg, #0b0b1e 0%, #07071a 100%);
-      border-right: 1px solid rgba(0,229,255,.1);
+      width: var(--sidebar-w);
+      flex-shrink: 0;
+      background: var(--bg-panel);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      padding: 18px 10px;
+      gap: 6px;
     }
-    .nav-item {
-      position: relative;
+
+    .logo {
       display: flex;
       align-items: center;
-      gap: 10px;
-      padding: 9px 12px;
-      border-radius: 4px;
-      font-family: 'Plus Jakarta Sans', sans-serif;
-      font-size: 10px;
+      gap: 9px;
+      padding: 4px 8px 14px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 4px;
+    }
+    .logo-mark {
+      width: 26px; height: 26px;
+      background: linear-gradient(135deg, #f97316, #ea580c);
+      border-radius: 7px;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 2px 8px rgba(249,115,22,.35);
+      flex-shrink: 0;
+    }
+    .logo-mark svg { width: 14px; height: 14px; fill: #fff; }
+    .logo-text { line-height: 1.2; }
+    .logo-text strong { font-size: 13px; font-weight: 700; color: var(--text-1); letter-spacing: .02em; }
+    .logo-text span   { display: block; font-size: 9px; color: var(--text-3); font-weight: 400; letter-spacing: .06em; text-transform: uppercase; margin-top: 1px; }
+
+    .nav-section { flex: 1; display: flex; flex-direction: column; gap: 1px; }
+
+    .nav-label {
+      font-size: 9px;
       font-weight: 600;
-      letter-spacing: .12em;
+      letter-spacing: .1em;
       text-transform: uppercase;
-      color: #6b7280;
-      transition: all .2s;
-      cursor: pointer;
+      color: var(--text-3);
+      padding: 10px 10px 4px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 7px 10px;
+      border-radius: 7px;
+      color: var(--text-2);
+      font-size: 12px;
+      font-weight: 500;
       text-decoration: none;
+      transition: background .15s, color .15s;
+      cursor: pointer;
     }
-    .nav-item:hover {
-      color: #00e5ff;
-      background: rgba(0,229,255,.06);
-    }
+    .nav-item .material-symbols-outlined { font-size: 16px; flex-shrink: 0; font-variation-settings: 'FILL' 0, 'wght' 350, 'GRAD' 0, 'opsz' 20; }
+    .nav-item:hover { background: rgba(255,255,255,.05); color: var(--text-1); }
     .nav-item.active {
-      color: #00e5ff;
-      background: rgba(0,229,255,.1);
-      border-left: 2px solid #00e5ff;
+      background: var(--accent-dim);
+      color: var(--accent);
     }
-    .nav-item .material-symbols-outlined { font-size: 18px; }
+    .nav-item.active .material-symbols-outlined { font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 20; }
 
-    /* ── Header ─────────────────────────────────────────── */
+    .sidebar-footer {
+      border-top: 1px solid var(--border);
+      padding-top: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+    }
+
+    /* ── Main ────────────────────────────────────────────── */
+    .main {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ── Topbar ──────────────────────────────────────────── */
     .topbar {
-      background: rgba(11,11,30,.85);
-      backdrop-filter: blur(20px);
-      border-bottom: 1px solid rgba(0,229,255,.08);
+      height: 48px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 22px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-panel);
+    }
+    .topbar-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-1);
+      letter-spacing: .01em;
+    }
+    .topbar-right { display: flex; align-items: center; gap: 8px; }
+
+    .search-box {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 5px 11px;
+      transition: border-color .15s;
+    }
+    .search-box:focus-within { border-color: rgba(249,115,22,.35); }
+    .search-box .material-symbols-outlined { font-size: 14px; color: var(--text-3); font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 20; }
+    .search-box input { background: none; border: none; outline: none; color: var(--text-1); font-size: 12px; font-family: inherit; width: 160px; }
+    .search-box input::placeholder { color: var(--text-3); }
+
+    .icon-btn {
+      width: 30px; height: 30px;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 7px;
+      color: var(--text-2);
+      background: none;
+      border: none;
+      cursor: pointer;
+      transition: background .15s, color .15s;
+    }
+    .icon-btn:hover { background: rgba(255,255,255,.06); color: var(--text-1); }
+    .icon-btn .material-symbols-outlined { font-size: 17px; font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 20; }
+
+    .status-pip {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 10px; font-weight: 500; color: #4ade80;
+      padding: 3px 9px; border-radius: 20px;
+      background: rgba(74,222,128,.08);
+      border: 1px solid rgba(74,222,128,.18);
+      letter-spacing: .02em;
+    }
+    .status-pip::before {
+      content: '';
+      width: 5px; height: 5px; border-radius: 50%;
+      background: #4ade80;
+      box-shadow: 0 0 5px #4ade80;
+      animation: blink 2.4s ease-in-out infinite;
+    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.35} }
+
+    /* ── Content area ────────────────────────────────────── */
+    .content {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      padding: 18px 22px 14px;
+      gap: 14px;
     }
 
-    /* ── Department card ─────────────────────────────────── */
-    .dept-card {
-      position: relative;
-      background: #0b0b1e;
-      border: 1px solid rgba(0,229,255,.1);
-      border-radius: 4px;
-      padding: 14px;
-      height: 96px;
+    .content-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .content-head h2 { font-size: 15px; font-weight: 600; color: var(--text-1); }
+    .content-head p  { font-size: 11px; color: var(--text-3); }
+
+    /* ── Cards grid ──────────────────────────────────────── */
+    .grid {
+      flex: 1;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      grid-template-rows: repeat(4, 1fr);
+      gap: 7px;
+      min-height: 0;
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      padding: 11px 12px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      transition: all .25s;
-      cursor: pointer;
-      overflow: hidden;
       text-decoration: none;
+      color: inherit;
+      cursor: pointer;
+      transition: background .18s, border-color .18s, box-shadow .18s, transform .18s;
+      position: relative;
+      overflow: hidden;
+      min-height: 0;
     }
-    .dept-card::before {
+    .card::after {
       content: '';
       position: absolute;
-      inset: 0;
-      background: linear-gradient(135deg, rgba(0,229,255,.06) 0%, transparent 60%);
+      left: 0; top: 0; bottom: 0;
+      width: 3px;
+      background: var(--accent);
+      border-radius: 9px 0 0 9px;
       opacity: 0;
-      transition: opacity .25s;
+      transition: opacity .18s;
     }
-    .dept-card:hover {
-      border-color: rgba(0,229,255,.5);
-      background: #10102a;
-      box-shadow: 0 0 20px rgba(0,229,255,.15), inset 0 0 20px rgba(0,229,255,.03);
-      transform: translateY(-2px);
+    .card:hover {
+      background: var(--bg-card-hov);
+      border-color: var(--border-hov);
+      box-shadow: 0 0 0 1px rgba(249,115,22,.08), 0 4px 16px rgba(0,0,0,.3);
+      transform: translateY(-1px);
     }
-    .dept-card:hover::before { opacity: 1; }
-    .dept-card:hover .card-icon  { color: #00e5ff; text-shadow: 0 0 12px rgba(0,229,255,.8); }
-    .dept-card:hover .card-title { color: #00e5ff; }
+    .card:hover::after { opacity: 1; }
+    .card:hover .card-icon { color: var(--accent); }
+    .card:hover .card-name { color: var(--text-1); }
 
-    .dept-card.accent-purple {
-      border-color: rgba(168,85,247,.1);
+    .card-top { display: flex; align-items: center; justify-content: space-between; }
+    .card-icon {
+      color: var(--text-3);
+      font-size: 17px;
+      transition: color .18s;
+      font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 20;
     }
-    .dept-card.accent-purple:hover {
-      border-color: rgba(168,85,247,.5);
-      box-shadow: 0 0 20px rgba(168,85,247,.15), inset 0 0 20px rgba(168,85,247,.03);
-    }
-    .dept-card.accent-purple:hover .card-icon  { color: #a855f7; text-shadow: 0 0 12px rgba(168,85,247,.8); }
-    .dept-card.accent-purple:hover .card-title { color: #a855f7; }
-    .dept-card.accent-purple .card-icon { color: rgba(168,85,247,.5); }
+    .card-num { font-size: 9px; color: var(--text-3); font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
+    .card-name { font-size: 11px; font-weight: 500; color: var(--text-2); line-height: 1.3; transition: color .18s; }
 
-    .card-icon  { color: rgba(0,229,255,.4); font-size: 20px; transition: all .25s; }
-    .card-title { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 12px; font-weight: 600; color: #9ca3af; letter-spacing: .01em; transition: color .25s; line-height: 1.3; }
-    .card-num   { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: rgba(107,114,128,.3); }
-
-    /* ── Status badge ───────────────────────────────────── */
-    .status-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 9px;
-      font-weight: 500;
-      letter-spacing: .1em;
-      text-transform: uppercase;
-      padding: 3px 10px;
-      border-radius: 2px;
-      background: rgba(0,229,255,.06);
-      color: #00e5ff;
-      border: 1px solid rgba(0,229,255,.2);
+    /* AI card special accent */
+    .card.ai {
+      border-color: rgba(168,85,247,.12);
     }
-    .status-dot {
-      width: 5px; height: 5px;
-      background: #00e5ff;
-      border-radius: 50%;
-      box-shadow: 0 0 6px #00e5ff;
-      animation: pulse 2s infinite;
-    }
-
-    /* ── Search ─────────────────────────────────────────── */
-    .search-wrap {
-      display: flex;
-      align-items: center;
-      background: rgba(255,255,255,.04);
-      border: 1px solid rgba(0,229,255,.1);
-      border-radius: 3px;
-      padding: 5px 12px;
-      gap: 8px;
-      transition: border-color .2s;
-    }
-    .search-wrap:focus-within {
-      border-color: rgba(0,229,255,.4);
-      box-shadow: 0 0 12px rgba(0,229,255,.1);
-    }
-    .search-wrap input {
-      background: transparent;
-      border: none;
-      outline: none;
-      color: #e0e7ff;
-      font-size: 12px;
-      width: 180px;
-    }
-    .search-wrap input::placeholder { color: #4b5563; }
-
-    /* ── Ambient glow orbs ──────────────────────────────── */
-    .orb-blue {
-      position: absolute;
-      width: 300px; height: 300px;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(0,229,255,.12) 0%, transparent 70%);
-      pointer-events: none;
-    }
-    .orb-purple {
-      position: absolute;
-      width: 250px; height: 250px;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(168,85,247,.1) 0%, transparent 70%);
-      pointer-events: none;
-    }
-
-    .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+    .card.ai::after { background: #a855f7; }
+    .card.ai:hover  { border-color: rgba(168,85,247,.45); box-shadow: 0 0 0 1px rgba(168,85,247,.08), 0 4px 16px rgba(0,0,0,.3); }
+    .card.ai:hover .card-icon { color: #a855f7; }
+    .card.ai .card-icon { color: rgba(168,85,247,.35); }
 
     /* scrollbar */
     ::-webkit-scrollbar { width: 4px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: rgba(0,229,255,.2); border-radius: 2px; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,.08); border-radius: 4px; }
   </style>
 </head>
-<body class="h-screen overflow-hidden grid-canvas">
+<body>
+<div class="shell">
 
-  <!-- ambient glow orbs -->
-  <div class="orb-blue"  style="top:-80px; left:180px; animation: pulse-slow 4s infinite;"></div>
-  <div class="orb-purple" style="bottom:60px; right:120px;"></div>
-
-  <!-- ══ SIDEBAR ══════════════════════════════════════════ -->
-  <aside class="sidebar h-screen w-60 fixed left-0 top-0 z-40 flex flex-col py-7 px-3 justify-between">
-    <div class="flex flex-col gap-7">
-
-      <!-- Logo -->
-      <div class="px-3">
-        <div class="flex items-center gap-2 mb-1">
-          <div style="width:8px;height:8px;background:linear-gradient(135deg,#00e5ff,#a855f7);border-radius:2px;box-shadow:0 0 8px rgba(0,229,255,.7);"></div>
-          <span class="text-base font-black text-white tracking-tight font-headline">ROSSILBER</span>
-        </div>
-        <p class="text-[9px] uppercase tracking-[.25em] font-mono" style="background:linear-gradient(90deg,#00e5ff,#a855f7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Technology Monolith</p>
+  <!-- ── Sidebar ───────────────────────────────────────── -->
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="logo-mark">
+        <svg viewBox="0 0 16 16"><path d="M8 1L1 5v6l7 4 7-4V5L8 1zm0 1.8L13.4 6 8 9.2 2.6 6 8 2.8zM2 7.1l5.5 3.1V14L2 10.9V7.1zm7.5 3.1L15 7.1v3.8L9.5 14v-3.8z"/></svg>
       </div>
-
-      <!-- System status strip -->
-      <div class="px-3 py-2 mx-1 rounded" style="background:rgba(0,229,255,.04);border:1px solid rgba(0,229,255,.08);">
-        <p class="text-[8px] font-mono text-gray-500 uppercase tracking-widest mb-1">Статус систем</p>
-        <div class="flex items-center gap-2">
-          <div class="status-dot"></div>
-          <span class="text-[9px] font-mono text-neon-blue">Все системы онлайн</span>
-        </div>
+      <div class="logo-text">
+        <strong>Rossilber</strong>
+        <span>Technology Monolith</span>
       </div>
-
-      <!-- Nav -->
-      <nav class="flex flex-col gap-0.5">
-        <a class="nav-item" href="ai.html">
-          <span class="material-symbols-outlined">smart_toy</span>
-          <span>Rossilber GPT</span>
-        </a>
-        <a class="nav-item active" href="index.html">
-          <span class="material-symbols-outlined">account_tree</span>
-          <span>Направления</span>
-        </a>
-        <a class="nav-item" href="checks-hub.html">
-          <span class="material-symbols-outlined">dashboard</span>
-          <span>Дашборд</span>
-        </a>
-        <a class="nav-item" href="legal.html">
-          <span class="material-symbols-outlined">menu_book</span>
-          <span>База знаний</span>
-        </a>
-      </nav>
     </div>
 
-    <!-- Footer nav -->
-    <div>
-      <div class="mx-1 mb-3" style="height:1px;background:linear-gradient(90deg,rgba(0,229,255,.15),transparent);"></div>
-      <a class="nav-item" href="flow.html">
-        <span class="material-symbols-outlined" style="color:rgba(168,85,247,.7);">waves</span>
-        <span>Rossilber Flow</span>
+    <div class="nav-section">
+      <span class="nav-label">Навигация</span>
+      <a class="nav-item" href="ai.html">
+        <span class="material-symbols-outlined">smart_toy</span>
+        Rossilber GPT
       </a>
-      <p class="text-[8px] font-mono text-gray-600 mt-4 px-3">v2.0 · 2026</p>
+      <a class="nav-item active" href="index.html">
+        <span class="material-symbols-outlined">account_tree</span>
+        Направления
+      </a>
+      <a class="nav-item" href="checks-hub.html">
+        <span class="material-symbols-outlined">dashboard</span>
+        Дашборд
+      </a>
+      <a class="nav-item" href="legal.html">
+        <span class="material-symbols-outlined">menu_book</span>
+        База знаний
+      </a>
+    </div>
+
+    <div class="sidebar-footer">
+      <a class="nav-item" href="flow.html">
+        <span class="material-symbols-outlined">waves</span>
+        Rossilber Flow
+      </a>
     </div>
   </aside>
 
-  <!-- ══ MAIN ═════════════════════════════════════════════ -->
-  <main class="h-full flex flex-col" style="margin-left:240px;">
+  <!-- ── Main ──────────────────────────────────────────── -->
+  <div class="main">
 
     <!-- Topbar -->
-    <header class="topbar flex justify-between items-center px-8 py-3 sticky top-0 z-30">
-      <div class="flex items-center gap-4">
-        <h1 class="text-sm font-bold uppercase tracking-[.2em] font-headline text-white">Корпоративный портал</h1>
-        <div class="status-badge">
-          <div class="status-dot"></div>
-          Status: Online
-        </div>
-      </div>
-      <div class="flex items-center gap-4">
-        <label class="search-wrap">
-          <span class="material-symbols-outlined text-gray-500" style="font-size:16px;">search</span>
-          <input placeholder="Поиск по порталу..." type="text"/>
+    <header class="topbar">
+      <span class="topbar-title">Корпоративный портал</span>
+      <div class="topbar-right">
+        <label class="search-box">
+          <span class="material-symbols-outlined">search</span>
+          <input type="text" placeholder="Поиск по порталу…"/>
         </label>
-        <div class="flex items-center gap-3">
-          <button class="text-gray-500 hover:text-neon-blue transition-colors" type="button" aria-label="Уведомления">
-            <span class="material-symbols-outlined" style="font-size:20px;">notifications</span>
-          </button>
-          <button class="text-gray-500 hover:text-neon-blue transition-colors" type="button" aria-label="Настройки">
-            <span class="material-symbols-outlined" style="font-size:20px;">settings</span>
-          </button>
-        </div>
+        <span class="status-pip">Онлайн</span>
+        <button class="icon-btn" aria-label="Уведомления">
+          <span class="material-symbols-outlined">notifications</span>
+        </button>
+        <button class="icon-btn" aria-label="Настройки">
+          <span class="material-symbols-outlined">settings</span>
+        </button>
       </div>
     </header>
 
     <!-- Content -->
-    <section class="flex-1 overflow-y-auto px-8 py-6">
-
-      <!-- Section header -->
-      <div class="flex items-end justify-between mb-6 max-w-5xl">
-        <div>
-          <p class="text-[9px] font-mono tracking-[.25em] uppercase mb-1" style="color:rgba(0,229,255,.6);">// Операционная экосистема</p>
-          <h2 class="text-2xl font-black font-headline leading-none">
-            <span class="text-gradient-bp">Направления</span>
-            <span class="text-white"> деятельности</span>
-          </h2>
-        </div>
-        <p class="text-[10px] font-mono text-gray-500">16 модулей активно</p>
+    <div class="content">
+      <div class="content-head">
+        <h2>Направления деятельности</h2>
+        <p>16 модулей · все активны</p>
       </div>
 
-      <!-- Cards grid -->
-      <div class="grid grid-cols-4 gap-3 max-w-5xl">
+      <div class="grid">
 
-        <a href="departments.html?dept=beloretsk" class="dept-card">
-          <div class="flex justify-between items-start">
+        <a href="departments.html?dept=beloretsk" class="card">
+          <div class="card-top">
             <span class="material-symbols-outlined card-icon">factory</span>
             <span class="card-num">01</span>
           </div>
-          <span class="card-title">Производство Белорецк</span>
+          <span class="card-name">Производство Белорецк</span>
         </a>
 
-        <a href="departments.html?dept=technopark" class="dept-card">
-          <div class="flex justify-between items-start">
+        <a href="departments.html?dept=technopark" class="card">
+          <div class="card-top">
             <span class="material-symbols-outlined card-icon">precision_manufacturing</span>
             <span class="card-num">02</span>
           </div>
-          <span class="card-title">Технопарк</span>
+          <span class="card-name">Технопарк</span>
         </a>
 
-        <a href="departments.html?dept=rnd" class="dept-card">
-          <div class="flex justify-between items-start">
+        <a href="departments.html?dept=rnd" class="card">
+          <div class="card-top">
             <span class="material-symbols-outlined card-icon">biotech</span>
             <span class="card-num">03</span>
           </div>
-          <span class="card-title">RnD и Технологии</span>
+          <span class="card-name">RnD и Технологии</span>
         </a>
 
-        <a href="departments.html?dept=sales" class="dept-card">
-          <div class="flex justify-between items-start">
+        <a href="departments.html?dept=sales" class="card">
+          <div class="card-top">
             <span class="material-symbols-outlined card-icon">payments</span>
             <span class="card-num">04</span>
           </div>
-          <span class="card-title">Продажи</span>
+          <span class="card-name">Продажи</span>
         </a>
 
-        <a href="departments.html?dept=supply" class="dept-card">
-          <div class="flex justify-between items-start">
+        <a href="departments.html?dept=supply" class="card">
+          <div class="card-top">
             <span class="material-symbols-outlined card-icon">inventory_2</span>
             <span class="card-num">05</span>
           </div>
-          <span class="card-title">Снабжение</span>
+          <span class="card-name">Снабжение</span>
         </a>
 
-        <a href="departments.html?dept=development" class="dept-card">
-          <div class="flex justify-between items-start">
+        <a href="departments.html?dept=development" class="card">
+          <div class="card-top">
             <span class="material-symbols-outlined card-icon">trending_up</span>
             <span class="card-num">06</span>
           </div>
-          <span class="card-title">Развитие</span>
+          <span class="card-name">Развитие</span>
         </a>
 
-        <a href="departments.html?dept=efficiency" class="dept-card">
-          <div class="flex justify-between items-start">
+        <a href="departments.html?dept=efficiency" class="card">
+          <div class="card-top">
             <span class="material-symbols-outlined card-icon">bolt</span>
             <span class="card-num">07</span>
           </div>
-          <span class="card-title">Опер. эффективность</span>
+          <span class="card-name">Опер. эффективность</span>
         </a>
 
-        <a href="departments.html?dept=hr" class="dept-card">
-          <div class="flex justify-between items-start">
+        <a href="departments.html?dept=hr" class="card">
+          <div class="card-top">
             <span class="material-symbols-outlined card-icon">group</span>
             <span class="card-num">08</span>
           </div>
-          <span class="card-title">Персонал</span>
+          <span class="card-name">Персонал</span>
         </a>
 
-        <a href="departments.html?dept=finance" class="dept-card">
-          <div class="flex justify-between items-start">
+        <a href="departments.html?dept=finance" class="card">
+          <div class="card-top">
             <span class="material-symbols-outlined card-icon">account_balance</span>
             <span class="card-num">09</span>
           </div>
-          <span class="card-title">Финансы</span>
+          <span class="card-name">Финансы</span>
         </a>
 
-        <a href="departments.html?dept=security" class="dept-card">
-          <div class="flex justify-between items-start">
+        <a href="departments.html?dept=security" class="card">
+          <div class="card-top">
             <span class="material-symbols-outlined card-icon">security</span>
             <span class="card-num">10</span>
           </div>
-          <span class="card-title">Безопасность</span>
+          <span class="card-name">Безопасность</span>
         </a>
 
-        <a href="departments.html?dept=hse" class="dept-card">
-          <div class="flex justify-between items-start">
+        <a href="departments.html?dept=hse" class="card">
+          <div class="card-top">
             <span class="material-symbols-outlined card-icon">health_and_safety</span>
             <span class="card-num">11</span>
           </div>
-          <span class="card-title">СОТПБ и ЭБ</span>
+          <span class="card-name">СОТПБ и ЭБ</span>
         </a>
 
-        <a href="departments.html?dept=legal" class="dept-card">
-          <div class="flex justify-between items-start">
+        <a href="departments.html?dept=legal" class="card">
+          <div class="card-top">
             <span class="material-symbols-outlined card-icon">gavel</span>
             <span class="card-num">12</span>
           </div>
-          <span class="card-title">Право</span>
+          <span class="card-name">Право</span>
         </a>
 
-        <a href="departments.html?dept=it" class="dept-card">
-          <div class="flex justify-between items-start">
+        <a href="departments.html?dept=it" class="card">
+          <div class="card-top">
             <span class="material-symbols-outlined card-icon">memory</span>
             <span class="card-num">13</span>
           </div>
-          <span class="card-title">ИТ</span>
+          <span class="card-name">ИТ</span>
         </a>
 
-        <a href="departments.html?dept=admin" class="dept-card">
-          <div class="flex justify-between items-start">
+        <a href="departments.html?dept=admin" class="card">
+          <div class="card-top">
             <span class="material-symbols-outlined card-icon">admin_panel_settings</span>
             <span class="card-num">14</span>
           </div>
-          <span class="card-title">Администрирование</span>
+          <span class="card-name">Администрирование</span>
         </a>
 
-        <a href="departments.html?dept=tech_policy" class="dept-card">
-          <div class="flex justify-between items-start">
+        <a href="departments.html?dept=tech_policy" class="card">
+          <div class="card-top">
             <span class="material-symbols-outlined card-icon">architecture</span>
             <span class="card-num">15</span>
           </div>
-          <span class="card-title">Техническая политика</span>
+          <span class="card-name">Техническая политика</span>
         </a>
 
-        <a href="departments.html?dept=ai" class="dept-card accent-purple">
-          <div class="flex justify-between items-start">
+        <a href="departments.html?dept=ai" class="card ai">
+          <div class="card-top">
             <span class="material-symbols-outlined card-icon">neurology</span>
             <span class="card-num">16</span>
           </div>
-          <span class="card-title">Искусственный интеллект</span>
+          <span class="card-name">Искусственный интеллект</span>
         </a>
 
       </div>
-    </section>
-  </main>
+    </div>
 
+  </div>
+</div>
 </body>
 </html>
